@@ -1,0 +1,921 @@
+:root {
+    /* Acentos de marca (fijos en ambos temas) */
+    --verde-oscuro: #051B05;
+    --verde-oscuro-2: #0a2f0a;
+    --verde-lima: #93bd33;
+    --ambar: #ffa300;
+    --naranja: #F57C00;
+    --rojo: #FF0000;
+    --rojo-intenso: #d40000;
+    --rojo-intenso-2: #8f0000;
+    --acento-borde: #000000;
+    --footer-bg: #1f2933;
+
+    /* Superficies y texto (cambian con el tema) */
+    --bg: #f4f6f5;
+    --surface: #ffffff;
+    --surface-2: #fafbfa;
+    --hover: #f0f4f1;
+    --text: #1F2933;
+    --muted: #7a7a7a;
+    --border: #e2e6e4;
+    --titulo: #051B05;
+    --subtitulo: #0E2F3E;
+    --header-text: #ffffff;
+    --nav-text: rgba(255, 255, 255, 0.85);
+
+    --sombra: 0 1px 3px rgba(5, 27, 5, 0.08);
+    --sombra-media: 0 4px 12px rgba(5, 27, 5, 0.10);
+    --sombra-hover: 0 8px 22px rgba(5, 27, 5, 0.16);
+}
+
+[data-theme="dark"] {
+    --bg: #0e1512;
+    --surface: #17201c;
+    --surface-2: #14201b;
+    --hover: #1d2a24;
+    --text: #e7ecea;
+    --muted: #97a39d;
+    --border: #28342e;
+    --titulo: #d4ecd7;
+    --subtitulo: #a9d3de;
+    --header-text: #e7ecea;
+    --nav-text: rgba(231, 236, 234, 0.8);
+    --acento-borde: #ffffff;
+
+    --sombra: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --sombra-media: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --sombra-hover: 0 8px 22px rgba(0, 0, 0, 0.6);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* Header */
+.site-header {
+    background: linear-gradient(135deg, var(--rojo-intenso) 0%, var(--rojo-intenso-2) 100%);
+    color: var(--header-text);
+    border-bottom: 3px solid var(--acento-borde);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--header-text);
+}
+
+.brand-logo {
+    height: 40px;
+    width: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.brand-name {
+    font-family: 'Big Shoulders Text', sans-serif;
+    font-weight: 800;
+    font-size: 27px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.main-nav {
+    display: flex;
+    gap: 26px;
+}
+
+.main-nav a {
+    color: var(--nav-text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 6px 2px;
+    position: relative;
+    transition: color 0.15s ease;
+}
+
+.main-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--acento-borde);
+    transition: width 0.2s ease;
+}
+
+.main-nav a:hover {
+    color: var(--header-text);
+}
+
+.main-nav a:hover::after {
+    width: 100%;
+}
+
+/* Botón de tema */
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--header-text);
+    border-radius: 999px;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.theme-toggle:active {
+    transform: scale(0.94);
+}
+
+.icon-sun {
+    display: none;
+}
+
+.icon-moon {
+    display: block;
+}
+
+[data-theme="dark"] .icon-sun {
+    display: block;
+}
+
+[data-theme="dark"] .icon-moon {
+    display: none;
+}
+
+/* Main */
+main.container {
+    padding-top: 34px;
+    padding-bottom: 48px;
+    flex: 1;
+}
+
+h1 {
+    font-family: 'Big Shoulders Text', sans-serif;
+    font-weight: 800;
+    color: var(--titulo);
+    font-size: 38px;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+h2 {
+    font-family: 'Agdasima', sans-serif;
+    font-weight: 700;
+    color: var(--subtitulo);
+    font-size: 26px;
+    margin: 28px 0 10px;
+    letter-spacing: 0.3px;
+}
+
+.page-subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 26px;
+}
+
+/* Botones */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background: var(--ambar);
+    color: var(--verde-oscuro);
+    box-shadow: var(--sombra);
+}
+
+.btn-primary:hover {
+    background: var(--naranja);
+    box-shadow: var(--sombra-media);
+}
+
+.btn-secondary {
+    background: #0E2F3E;
+    color: #ffffff;
+    box-shadow: var(--sombra);
+}
+
+.btn-secondary:hover {
+    background: #1F2933;
+    box-shadow: var(--sombra-media);
+}
+
+.btn-naranja {
+    background: var(--naranja);
+    color: var(--verde-oscuro);
+    box-shadow: var(--sombra);
+}
+
+.btn-naranja:hover {
+    background: #d96b00;
+    box-shadow: var(--sombra-media);
+}
+
+.btn-danger {
+    background: var(--rojo);
+    color: #ffffff;
+    box-shadow: var(--sombra);
+}
+
+.btn-back {
+    background: var(--rojo-intenso);
+    color: #ffffff;
+    box-shadow: var(--sombra);
+    margin-bottom: 18px;
+}
+
+.btn-back:hover {
+    background: var(--rojo-intenso-2);
+    box-shadow: var(--sombra-media);
+}
+
+.back-button {
+    display: none;
+}
+
+.back-button.visible {
+    display: inline-block;
+}
+
+/* Tablas */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--surface);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--sombra-media);
+    border: 1px solid var(--border);
+}
+
+thead {
+    background: var(--verde-oscuro);
+    color: var(--header-text);
+}
+
+th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text);
+}
+
+tbody tr:nth-child(even) {
+    background: var(--surface-2);
+}
+
+tbody tr:hover {
+    background: var(--hover);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+td a {
+    color: var(--naranja);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+td a:hover {
+    text-decoration: underline;
+}
+
+/* Badges de estado */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.badge-alerta {
+    background: #ffe5e5;
+    color: #b30000;
+}
+
+.badge-ok {
+    background: #dcf5dc;
+    color: #146b14;
+}
+
+.badge-warn {
+    background: #fff3d6;
+    color: #9a6200;
+}
+
+.badge-neutral {
+    background: #eceff1;
+    color: #37474f;
+}
+
+/* Tarjetas de resumen */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 18px;
+    margin-top: 24px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 22px;
+    box-shadow: var(--sombra);
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+}
+
+.stat-number {
+    display: block;
+    font-family: 'Big Shoulders Text', sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    color: var(--titulo);
+    line-height: 1;
+}
+
+.stat-label {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+/* Panel "qué hacer": las colas de trabajo del dashboard */
+.que-hacer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.que-hacer-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--sombra);
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.que-hacer-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+}
+
+.que-hacer-numero {
+    display: block;
+    font-family: 'Big Shoulders Text', sans-serif;
+    font-weight: 800;
+    font-size: 44px;
+    line-height: 1;
+    color: var(--titulo);
+}
+
+.que-hacer-titulo {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+}
+
+.que-hacer-detalle {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.que-hacer-roja { border-left-color: var(--rojo); }
+.que-hacer-ambar { border-left-color: var(--ambar); }
+.que-hacer-azul { border-left-color: var(--subtitulo); }
+.que-hacer-neutra { border-left-color: #94a3b8; }
+
+/* Tarjetas enlazables (índice de catálogos) */
+.card-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 20px;
+    box-shadow: var(--sombra);
+    text-align: center;
+    text-decoration: none;
+    color: var(--titulo);
+    font-weight: 600;
+    font-size: 15px;
+    min-height: 76px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.card-link:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+    border-color: var(--acento-borde);
+    color: var(--naranja);
+}
+
+/* Formularios */
+.form p {
+    margin-bottom: 14px;
+}
+
+.form label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.form input[type="text"],
+.form input[type="number"],
+.form input[type="date"],
+.form select,
+.form textarea {
+    width: 100%;
+    max-width: 420px;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+.form input:focus,
+.form select:focus,
+.form textarea:focus {
+    outline: none;
+    border-color: var(--naranja);
+}
+
+.form .errorlist {
+    color: var(--rojo);
+    font-size: 12px;
+    margin: 4px 0 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.form .helptext {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* Autenticación en el header */
+.nav-login {
+    color: var(--header-text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.nav-login:hover {
+    color: #ffffff;
+}
+
+.nav-logout {
+    background: none;
+    border: none;
+    color: var(--header-text);
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.nav-logout:hover {
+    color: #ffffff;
+}
+
+.logout-form {
+    margin: 0;
+}
+
+/* Formulario de acción que debe quedar alineado con los botones */
+.inline-form {
+    display: inline;
+    margin: 0;
+}
+
+/* Botones de acción dentro de una celda de bandeja */
+.celda-acciones {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Aviso que explica por qué la acción principal de una vista no está disponible */
+.aviso {
+    background: #fff3d6;
+    color: #9a6200;
+    border: 1px solid #f0d9a8;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Celda informativa del cliente en el formulario de solicitud */
+.campo-cliente {
+    margin: 12px 0;
+}
+
+.campo-cliente[data-visible="no"] {
+    display: none;
+}
+
+.celda-cliente {
+    display: inline-block;
+    min-width: 280px;
+    padding: 9px 14px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.celda-cliente[data-estado="ok"] {
+    border-style: solid;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.celda-cliente[data-estado="error"] {
+    border-color: var(--rojo);
+    color: var(--rojo);
+}
+
+.celda-cliente[data-estado="cargando"]::after {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    vertical-align: -2px;
+    border: 2px solid var(--border);
+    border-top-color: var(--naranja);
+    border-radius: 50%;
+    animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Controles de la bandeja de arriendos */
+.bandeja-controles {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+/* Celdas plegables: el título se pulsa y despliega su tabla debajo */
+.celda-plegable {
+    margin-bottom: 26px;
+}
+
+.celda-plegable > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--naranja);
+    border-radius: 8px;
+    box-shadow: var(--sombra);
+    cursor: pointer;
+    font-family: 'Agdasima', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.3px;
+    color: var(--subtitulo);
+    list-style: none;
+    transition: background 0.15s ease, border-radius 0.15s ease;
+}
+
+.celda-plegable > summary::-webkit-details-marker {
+    display: none;
+}
+
+.celda-plegable > summary:hover {
+    background: var(--hover);
+}
+
+.celda-plegable > summary::after {
+    content: "▾";
+    font-size: 15px;
+    transition: transform 0.15s ease;
+}
+
+.celda-plegable[open] > summary {
+    border-radius: 8px 8px 0 0;
+}
+
+.celda-plegable[open] > summary::after {
+    transform: rotate(180deg);
+}
+
+.celda-plegable > .contenido {
+    padding-top: 18px;
+}
+
+.bandeja-controles select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: inherit;
+}
+
+/* Diálogo de confirmación */
+.dialogo-confirmacion {
+    /* El reset de más arriba (* { margin: 0 }) le gana al margin:auto que el
+       navegador le pone a un <dialog>, así que sin esto el diálogo queda pegado a
+       la esquina superior izquierda. Con inset y márgenes automáticos se centra en
+       las dos direcciones, y el alto máximo evita que un formulario largo se salga
+       de la pantalla: en vez de eso hace scroll adentro. */
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: fit-content;
+    height: fit-content;
+    max-width: min(520px, calc(100vw - 40px));
+    max-height: calc(100vh - 40px);
+    overflow: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px;
+    box-shadow: var(--sombra-media);
+}
+
+.dialogo-confirmacion::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.dialogo-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Encabezado que dice sobre qué actúa el diálogo */
+.dialogo-contexto {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+.btn-si {
+    background: #ffffff;
+    color: #000000;
+    border: 2px solid #000000;
+}
+
+.btn-si:hover {
+    background: #ececec;
+}
+
+/* Caja de login */
+.auth-box {
+    max-width: 420px;
+    margin: 40px auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: var(--sombra-media);
+}
+
+.form-errors {
+    background: #ffe5e5;
+    color: #b30000;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* Footer */
+.site-footer {
+    background: var(--footer-bg);
+    color: #ffffff;
+    padding: 20px 0;
+    font-size: 13px;
+    border-top: 3px solid var(--acento-borde);
+}
+
+/* ===== Adaptabilidad (responsive) ===== */
+@media (max-width: 900px) {
+    .header-inner {
+        flex-wrap: wrap;
+        height: auto;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        row-gap: 8px;
+    }
+
+    .header-right {
+        display: contents;
+    }
+
+    .main-nav {
+        order: 3;
+        flex: 1 0 100%;
+        gap: 18px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    .brand-name {
+        font-size: 22px;
+    }
+
+    .brand {
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 14px;
+    }
+
+    /* Las tablas anchas se desplazan horizontalmente en vez de desbordar la página */
+    table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    th,
+    td {
+        padding: 10px 12px;
+        white-space: nowrap;
+    }
+
+    .stat-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .form input,
+    .form select,
+    .form textarea {
+        max-width: 100%;
+        font-size: 16px; /* evita el zoom automático en iOS */
+    }
+
+    .btn {
+        min-height: 44px; /* área táctil mínima */
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-name {
+        font-size: 19px;
+        letter-spacing: 1px;
+    }
+
+    .site-footer span {
+        font-size: 12px;
+    }
+}
+
+/* ===== Toasts ===== */
+/* Avisos que viajan con la página y se van solos. El servidor los escribe, así que
+   sobreviven al redirect del POST que no pasó. */
+.toast-contenedor {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+    max-width: min(420px, calc(100vw - 40px));
+}
+
+.toast {
+    padding: 14px 18px;
+    border-radius: 10px;
+    border-left: 4px solid var(--acento-borde);
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--sombra-hover);
+    font-size: 14px;
+    line-height: 1.4;
+    opacity: 1;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.toast-error {
+    border-left-color: #b30000;
+}
+
+.toast-saliendo {
+    opacity: 0;
+    transform: translateY(8px);
+}
