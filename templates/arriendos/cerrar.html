@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Cerrar arriendo — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Cerrar arriendo</h1>
+<p class="page-subtitle">{{ arriendo.equipo.codigo }} — {{ arriendo.cliente.razon_social }}</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Cerrar</button>
+    <a class="btn btn-secondary" href="{% url 'arriendos:arriendos' %}">Cancelar</a>
+</form>
+{% endblock %}

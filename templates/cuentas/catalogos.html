@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Catálogos — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Catálogos</h1>
+<p class="page-subtitle">Listados maestros del sistema.</p>
+
+<div class="stat-grid">
+    <a class="card-link" href="{% url 'cuentas:clientes' %}">Clientes</a>
+    <a class="card-link" href="{% url 'flota:equipos' %}">Equipos</a>
+    <a class="card-link" href="{% url 'flota:tipos_equipo' %}">Tipos de equipo</a>
+    <a class="card-link" href="{% url 'insumos:insumos' %}">Insumos</a>
+    <a class="card-link" href="{% url 'mantencion:planes' %}">Planes de mantención</a>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Equipos — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Equipos</h1>
+<p class="page-subtitle">Inventario de la flota.</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'flota:crear_equipo' %}">Crear equipo</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Patente</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Estado</th>
+            <th>Horómetro</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for equipo in equipos %}
+        <tr>
+            <td><a href="{% url 'flota:detalle_equipo' equipo.id %}">{{ equipo.codigo }}</a></td>
+            <td>{{ equipo.tipo_equipo.nombre }}</td>
+            <td>{{ equipo.patente|default:"—" }}</td>
+            <td>{{ equipo.marca|default:"—" }}</td>
+            <td>{{ equipo.modelo|default:"—" }}</td>
+            <td>
+                {% if equipo.estado == 'DISPONIBLE' %}
+                    <span class="badge badge-ok">{{ equipo.get_estado_display }}</span>
+                {% elif equipo.estado == 'EN_FAENA' %}
+                    <span class="badge badge-warn">{{ equipo.get_estado_display }}</span>
+                {% elif equipo.estado == 'EN_MANTENIMIENTO' %}
+                    <span class="badge badge-alerta">{{ equipo.get_estado_display }}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{{ equipo.get_estado_display }}</span>
+                {% endif %}
+            </td>
+            <td>{{ equipo.horometro_actual }}</td>
+            <td>
+                <button type="button" class="btn btn-secondary"
+                        data-cambiar-estado="{% url 'flota:cambiar_estado' equipo.id %}"
+                        data-equipo="{{ equipo.codigo }}"
+                        data-estado="{{ equipo.estado }}">Cambiar estado</button>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8">No hay equipos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<dialog id="dialogo-estado" class="dialogo-confirmacion">
+    <p class="dialogo-contexto">
+        Cambiar el estado del equipo <span id="estado-equipo"></span>.
+    </p>
+    <form method="post" class="form" id="formulario-estado">
+        {% csrf_token %}
+        <p>
+            <label for="select-estado">Nuevo estado:</label>
+            <select name="estado" id="select-estado">
+                {% for valor, etiqueta in estados %}
+                <option value="{{ valor }}">{{ etiqueta }}</option>
+                {% endfor %}
+            </select>
+        </p>
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, cambiar</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{% static 'js/borrado.js' %}"></script>
+<script src="{% static 'js/estado-equipo.js' %}"></script>
+{% endblock %}

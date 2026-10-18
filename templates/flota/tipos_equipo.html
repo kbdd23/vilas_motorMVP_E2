@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Tipos de equipo — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Tipos de equipo</h1>
+<p class="page-subtitle">Categorías de la flota y su unidad de medida.</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'flota:crear_tipo_equipo' %}">Crear tipo</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Unidad de medida</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tipo in tipos %}
+        <tr>
+            <td>{{ tipo.nombre }}</td>
+            <td>{{ tipo.get_unidad_medida_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">No hay tipos de equipo registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

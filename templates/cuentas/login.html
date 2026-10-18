@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar sesión — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+    <h1>Iniciar sesión</h1>
+    <p class="page-subtitle">Acceso del planificador.</p>
+
+    {% if form.errors %}
+        <div class="form-errors">Email o contraseña incorrectos.</div>
+    {% endif %}
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
+</div>
+{% endblock %}

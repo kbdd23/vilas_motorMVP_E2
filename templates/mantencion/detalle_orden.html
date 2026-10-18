@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ orden.numero_ot }} — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>{{ orden.numero_ot }}</h1>
+<p class="page-subtitle">{{ orden.get_tipo_display }} · {{ orden.get_estado_display }}</p>
+
+<div class="celda-acciones">
+    <a class="btn btn-primary" href="{% url 'mantencion:registrar_insumo' orden.id %}">Registrar insumo</a>
+    {% if orden.estado == 'PROGRAMADA' %}
+        <form method="post" action="{% url 'mantencion:iniciar_orden' orden.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-naranja">Marcar en curso</button>
+        </form>
+    {% elif orden.estado == 'EN_CURSO' %}
+        <button type="button" class="btn btn-danger" data-abrir-cierre>Cerrar OT</button>
+    {% endif %}
+</div>
+
+<table>
+    <tbody>
+        <tr><th>Equipo</th><td>{{ orden.equipo.codigo }}</td></tr>
+        <tr><th>Servicio</th><td>{{ orden.servicio_plan|default:"—" }}</td></tr>
+        <tr><th>Tipo</th><td>{{ orden.get_tipo_display }}</td></tr>
+        <tr><th>Estado</th><td>{{ orden.get_estado_display }}</td></tr>
+        <tr><th>Fecha programada</th><td>{{ orden.fecha_programada|default:"—" }}</td></tr>
+        <tr><th>Fecha ejecución</th><td>{{ orden.fecha_ejecucion|default:"—" }}</td></tr>
+        <tr><th>Horómetro cierre</th><td>{{ orden.horometro_cierre|default:"—" }}</td></tr>
+        <tr><th>Observaciones</th><td>{{ orden.observaciones|default:"—" }}</td></tr>
+    </tbody>
+</table>
+
+<h2>Insumos usados</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Insumo</th>
+            <th>Cantidad</th>
+            <th>Notas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for oi in orden.insumos.all %}
+        <tr>
+            <td>{{ oi.insumo.nombre }}</td>
+            <td>{{ oi.cantidad_usada }}</td>
+            <td>{{ oi.notas|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">Sin insumos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if orden.estado == 'EN_CURSO' %}
+<dialog id="dialogo-cerrar-orden" class="dialogo-confirmacion"
+        {% if abrir_cierre %}data-abrir-al-cargar="si"{% endif %}>
+    <p class="dialogo-contexto">
+        Horómetro del equipo {{ orden.equipo.codigo }} al cerrar la orden
+        {{ orden.numero_ot }}. Horómetro actual: {{ orden.equipo.horometro_actual }}.
+        La lectura no puede ser menor.
+    </p>
+    <form method="post" class="form" id="formulario-cerrar-orden"
+          action="{% url 'mantencion:cerrar_orden' orden.id %}">
+        {% csrf_token %}
+        {{ form_cierre.as_p }}
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, cerrar</button>
+        </div>
+    </form>
+</dialog>
+{% endif %}
+
+<script src="{% static 'js/borrado.js' %}"></script>
+<script src="{% static 'js/cierre-orden.js' %}"></script>
+{% endblock %}

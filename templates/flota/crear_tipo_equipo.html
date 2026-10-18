@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear tipo de equipo — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Crear tipo de equipo</h1>
+<p class="page-subtitle">Agregar una categoría de flota y su unidad de medida.</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Crear</button>
+    <a class="btn btn-secondary" href="{% url 'flota:tipos_equipo' %}">Cancelar</a>
+</form>
+{% endblock %}

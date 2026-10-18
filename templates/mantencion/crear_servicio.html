@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear servicio — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Crear servicio</h1>
+<p class="page-subtitle">Agregar un servicio con su intervalo a un plan.</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Crear</button>
+    <a class="btn btn-secondary" href="{% url 'mantencion:planes' %}">Cancelar</a>
+</form>
+{% endblock %}

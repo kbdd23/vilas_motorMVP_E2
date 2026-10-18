@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ equipo.codigo }} — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>{{ equipo.codigo }}</h1>
+<p class="page-subtitle">{{ equipo.tipo_equipo.nombre }} · {{ equipo.get_estado_display }}</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'horometros:crear_solicitud' %}?fuente={{ fuente_sugerida }}&equipo={{ equipo.id }}">Solicitar horómetro</a>
+    <a class="btn btn-secondary" href="{% url 'mantencion:crear_orden' %}?equipo={{ equipo.id }}">Crear OT</a>
+    {% if equipo.estado == 'DISPONIBLE' %}
+    <a class="btn btn-secondary" href="{% url 'arriendos:crear_arriendo' %}?equipo={{ equipo.id }}">Crear arriendo</a>
+    {% endif %}
+</p>
+
+<table>
+    <tbody>
+        <tr><th>Tipo</th><td>{{ equipo.tipo_equipo.nombre }}</td></tr>
+        <tr><th>Patente</th><td>{{ equipo.patente|default:"—" }}</td></tr>
+        <tr><th>Marca</th><td>{{ equipo.marca|default:"—" }}</td></tr>
+        <tr><th>Modelo</th><td>{{ equipo.modelo|default:"—" }}</td></tr>
+        <tr><th>N° serie</th><td>{{ equipo.numero_serie|default:"—" }}</td></tr>
+        <tr><th>Estado</th><td>{{ equipo.get_estado_display }}</td></tr>
+        <tr><th>Horómetro actual</th><td>{{ equipo.horometro_actual }}</td></tr>
+    </tbody>
+</table>
+
+<h2>Lecturas de horómetro</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Valor</th>
+            <th>Fuente</th>
+            <th>Validada</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lectura in equipo.lecturas.all %}
+        <tr>
+            <td>{{ lectura.fecha_hora }}</td>
+            <td>{{ lectura.valor }}</td>
+            <td>{{ lectura.get_fuente_display }}</td>
+            <td>
+                {% if lectura.validada %}
+                    <span class="badge badge-ok">Validada</span>
+                {% else %}
+                    <span class="badge badge-neutral">Pendiente</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Sin lecturas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Órdenes de trabajo</h2>
+<table>
+    <thead>
+        <tr>
+            <th>N° OT</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Programada</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orden in equipo.ordenes_trabajo.all %}
+        <tr>
+            <td><a href="{% url 'mantencion:detalle_orden' orden.id %}">{{ orden.numero_ot }}</a></td>
+            <td>{{ orden.get_tipo_display }}</td>
+            <td>{{ orden.get_estado_display }}</td>
+            <td>{{ orden.fecha_programada|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Sin órdenes de trabajo.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Arriendos</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Inicio</th>
+            <th>Término</th>
+            <th>Vigencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for arriendo in equipo.arriendos.all %}
+        <tr>
+            <td>{{ arriendo.cliente.razon_social }}</td>
+            <td>{{ arriendo.fecha_inicio }}</td>
+            <td>{{ arriendo.fecha_termino|default:"—" }}</td>
+            <td>
+                {% if arriendo.estaVigente %}
+                    <span class="badge badge-ok">Vigente</span>
+                {% else %}
+                    <span class="badge badge-neutral">Cerrado</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Sin arriendos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

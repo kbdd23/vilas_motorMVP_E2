@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear insumo — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Crear insumo</h1>
+<p class="page-subtitle">Agregar un insumo al catálogo de mantención.</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Crear</button>
+    <a class="btn btn-secondary" href="{% url 'insumos:insumos' %}">Cancelar</a>
+</form>
+{% endblock %}

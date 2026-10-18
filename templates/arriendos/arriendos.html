@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Arriendos — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Arriendos</h1>
+<p class="page-subtitle">
+    Contratos con algo pendiente: cerrar el arriendo o marcar el regreso del equipo.
+    El historial completo vive en la ficha de cada equipo.
+</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'arriendos:crear_arriendo' %}">Crear arriendo</a>
+</p>
+
+<div class="bandeja-controles">
+    <label for="selector-ventana">Mantener los arriendos ya resueltos por:</label>
+    <select id="selector-ventana">
+        {% for valor, etiqueta, dias in ventanas %}
+        <option value="{{ valor }}" {% if valor == ventana_actual %}selected{% endif %}>{{ etiqueta }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Cliente</th>
+            <th>Fecha inicio</th>
+            <th>Fecha término</th>
+            <th>Vigencia</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for arriendo in arriendos %}
+        <tr>
+            <td>{{ arriendo.equipo.codigo }}</td>
+            <td>{{ arriendo.cliente.razon_social }}</td>
+            <td>{{ arriendo.fecha_inicio }}</td>
+            <td>{{ arriendo.fecha_termino|default:"—" }}</td>
+            <td>
+                {% if arriendo.estaVigente %}
+                    <span class="badge badge-ok">Vigente</span>
+                {% else %}
+                    <span class="badge badge-neutral">Cerrado</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if arriendo.estaVigente %}
+                    <a class="btn btn-danger" href="{% url 'arriendos:cerrar_arriendo' arriendo.id %}">Cerrar</a>
+                {% elif arriendo.equipo.estado != 'DISPONIBLE' %}
+                    <button type="button" class="btn btn-secondary"
+                            data-disponible="{% url 'flota:marcar_disponible' arriendo.equipo.id %}">
+                        Marcar disponible
+                    </button>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No hay arriendos pendientes.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<dialog id="dialogo-disponible" class="dialogo-confirmacion">
+    <p>
+        El equipo tiene un arriendo cerrado pero sigue en faena.
+        ¿Marcar su regreso y habilitar su disponibilidad?
+    </p>
+    <form method="post" id="formulario-disponible">
+        {% csrf_token %}
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" id="boton-no">No</button>
+            <button type="submit" class="btn btn-si">Sí</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{% static 'js/parametros.js' %}"></script>
+<script src="{% static 'js/ventana.js' %}"></script>
+<script src="{% static 'js/arriendos.js' %}"></script>
+{% endblock %}

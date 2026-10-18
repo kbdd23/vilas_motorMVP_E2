@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Clientes</h1>
+<p class="page-subtitle">Cartera de clientes.</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'cuentas:crear_cliente' %}">Crear cliente</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>RUT</th>
+            <th>Razón social</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Activo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes %}
+        <tr>
+            <td>{{ cliente.rut }}</td>
+            <td>{{ cliente.razon_social }}</td>
+            <td>{{ cliente.email_contacto|default:"—" }}</td>
+            <td>{{ cliente.telefono|default:"—" }}</td>
+            <td>
+                {% if cliente.activo %}
+                    <span class="badge badge-ok">Activo</span>
+                {% else %}
+                    <span class="badge badge-neutral">Inactivo</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No hay clientes registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

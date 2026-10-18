@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Insumos — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Insumos</h1>
+<p class="page-subtitle">Catálogo de insumos para mantención.</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'insumos:crear_insumo' %}">Crear insumo</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Unidad de medida</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for insumo in insumos %}
+        <tr>
+            <td>{{ insumo.codigo }}</td>
+            <td>{{ insumo.nombre }}</td>
+            <td>{{ insumo.unidad_medida|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No hay insumos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

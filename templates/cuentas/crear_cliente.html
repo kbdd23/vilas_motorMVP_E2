@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear cliente — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Crear cliente</h1>
+<p class="page-subtitle">Agregar un cliente a la cartera.</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Crear</button>
+    <a class="btn btn-secondary" href="{% url 'cuentas:clientes' %}">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="page-subtitle">Lo que hay que hacer hoy y cómo está la flota.</p>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <span class="stat-number">{{ total_equipos }}</span>
+        <span class="stat-label">Equipos</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ total_clientes }}</span>
+        <span class="stat-label">Clientes</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ total_arriendos }}</span>
+        <span class="stat-label">Arriendos</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ total_ot }}</span>
+        <span class="stat-label">Órdenes de trabajo</span>
+    </div>
+</div>
+
+<h2>Qué hacer</h2>
+
+<div class="que-hacer">
+    <a class="que-hacer-card que-hacer-neutra" href="{% url 'horometros:index' %}">
+        <span class="que-hacer-numero">{{ solicitudes_pendientes }}</span>
+        <span class="que-hacer-titulo">Pedir horómetros</span>
+        <span class="que-hacer-detalle">solicitudes sin respuesta</span>
+    </a>
+
+    <a class="que-hacer-card que-hacer-roja" href="#pronostico">
+        <span class="que-hacer-numero">{{ servicios_vencidos }}</span>
+        <span class="que-hacer-titulo">Mantención vencida</span>
+        <span class="que-hacer-detalle">intervalo ya cumplido</span>
+    </a>
+
+    <a class="que-hacer-card que-hacer-ambar" href="#pronostico">
+        <span class="que-hacer-numero">{{ servicios_por_vencer }}</span>
+        <span class="que-hacer-titulo">Mantención por vencer</span>
+        <span class="que-hacer-detalle">dentro de {{ umbral_alerta }} horas</span>
+    </a>
+
+    <a class="que-hacer-card que-hacer-azul" href="{% url 'mantencion:ordenes_trabajo' %}">
+        <span class="que-hacer-numero">{{ ots_abiertas }}</span>
+        <span class="que-hacer-titulo">Órdenes abiertas</span>
+        <span class="que-hacer-detalle">por ejecutar o cerrar</span>
+    </a>
+
+    <a class="que-hacer-card que-hacer-neutra" href="{% url 'arriendos:arriendos' %}">
+        <span class="que-hacer-numero">{{ equipos_sin_devolver }}</span>
+        <span class="que-hacer-titulo">Equipos sin devolver</span>
+        <span class="que-hacer-detalle">arriendo cerrado, máquina en terreno</span>
+    </a>
+</div>
+
+<h2 id="pronostico">Próximo mantenimiento por equipo</h2>
+<p class="page-subtitle">Cuánto le queda a cada máquina para su próxima intervención.</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Equipo</th>
+            <th>Tipo</th>
+            <th>Próximo servicio</th>
+            <th>Horas restantes</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in filas %}
+        <tr>
+            <td><a href="{% url 'flota:detalle_equipo' fila.equipo.id %}">{{ fila.equipo.codigo }}</a></td>
+            <td>{{ fila.equipo.tipo_equipo.nombre }}</td>
+            <td>{{ fila.proximo.nombre|default:"—" }}</td>
+            <td>{% if fila.horas_restantes != None %}{{ fila.horas_restantes|floatformat:"0" }}{% else %}—{% endif %}</td>
+            <td>
+                {% if fila.estado_alerta == 'VENCIDO' %}
+                    <span class="badge badge-alerta">Vencido</span>
+                {% elif fila.estado_alerta == 'POR_VENCER' %}
+                    <span class="badge badge-warn">Por vencer</span>
+                {% elif fila.estado_alerta == 'AL_DIA' %}
+                    <span class="badge badge-ok">Al día</span>
+                {% else %}
+                    <span class="badge badge-neutral">Sin plan</span>
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-primary"
+                   href="{% url 'mantencion:crear_orden' %}?equipo={{ fila.equipo.id }}{% if fila.proximo %}&servicio={{ fila.proximo.id }}{% endif %}">Crear OT</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No hay equipos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

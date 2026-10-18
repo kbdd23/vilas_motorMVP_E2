@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Horómetros — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Horómetros</h1>
+<p class="page-subtitle">
+    Lo que falta hacer y lo que ya se hizo, en la misma página. Cada celda se
+    pliega y recuerda cómo la dejaste.
+</p>
+
+<details class="celda-plegable" data-plegable="bandeja">
+    <summary>Bandeja de solicitudes</summary>
+    <div class="contenido">
+        <p>
+            <button type="button" class="btn btn-primary" data-abrir-solicitud>Solicitar lectura</button>
+        </p>
+
+        <div class="bandeja-controles">
+            <label for="selector-ventana">Mantener las solicitudes ya resueltas por:</label>
+            <select id="selector-ventana">
+                {% for valor, etiqueta, dias in ventanas %}
+                <option value="{{ valor }}" {% if valor == ventana_actual %}selected{% endif %}>{{ etiqueta }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipo</th>
+                    <th>Fuente</th>
+                    <th>Cliente</th>
+                    <th>Fecha solicitud</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for solicitud in solicitudes %}
+                <tr>
+                    <td>{{ solicitud.equipo.codigo }}</td>
+                    <td>{{ solicitud.get_fuente_display }}</td>
+                    <td>{{ solicitud.cliente.razon_social|default:"—" }}</td>
+                    <td>{{ solicitud.fecha_solicitud }}</td>
+                    <td>
+                        {% if solicitud.estaPendiente %}
+                            <span class="badge badge-warn">{{ solicitud.get_estado_display }}</span>
+                        {% else %}
+                            <span class="badge badge-ok">{{ solicitud.get_estado_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if solicitud.estaPendiente %}
+                        <div class="celda-acciones">
+                            <button type="button" class="btn btn-secondary"
+                                    data-lectura="{% url 'horometros:registrar_lectura' solicitud.id %}"
+                                    data-equipo="{{ solicitud.equipo.codigo }}"
+                                    data-fuente="{{ solicitud.get_fuente_display|lower }}"
+                                    data-cliente="{{ solicitud.cliente.razon_social|default:'' }}"
+                                    data-actual="{{ solicitud.equipo.horometro_actual }}">
+                                Registrar lectura
+                            </button>
+                            <button type="button" class="btn btn-danger"
+                                    data-borrar="{% url 'horometros:borrar_solicitud' solicitud.id %}">
+                                Borrar
+                            </button>
+                        </div>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No hay solicitudes pendientes.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+
+<details class="celda-plegable" data-plegable="lecturas">
+    <summary>Lecturas de horómetros</summary>
+    <div class="contenido">
+        <p class="page-subtitle">Se muestran las últimas 100 lecturas.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipo</th>
+                    <th>Valor</th>
+                    <th>Fecha</th>
+                    <th>Fuente</th>
+                    <th>Validada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lectura in lecturas %}
+                <tr>
+                    <td>{{ lectura.equipo.codigo }}</td>
+                    <td>{{ lectura.valor }}</td>
+                    <td>{{ lectura.fecha_hora }}</td>
+                    <td>{{ lectura.get_fuente_display }}</td>
+                    <td>
+                        {% if lectura.validada %}
+                            <span class="badge badge-ok">Validada</span>
+                        {% else %}
+                            <span class="badge badge-neutral">Pendiente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No hay lecturas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</details>
+
+<dialog id="dialogo-solicitud" class="dialogo-confirmacion"
+        {% if abrir_solicitud %}data-abrir-al-cargar="si"{% endif %}>
+    <p class="dialogo-contexto">
+        Se crea una sola solicitud. Se cierra cuando ingresas el dato que recibiste,
+        y si te equivocaste la borras.
+    </p>
+
+    {% if form_solicitud.sinEquipos %}
+    <p class="aviso">
+        No hay equipos que ofrecer para esa fuente. Al cliente se le pide con la
+        máquina en faena, al técnico con la máquina disponible, y la telemetría no
+        depende del estado.
+    </p>
+    {% endif %}
+
+    <form method="post" class="form" id="formulario-solicitud"
+          action="{% url 'horometros:crear_solicitud' %}">
+        {% csrf_token %}
+        {{ form_solicitud.as_p }}
+
+        <p class="campo-cliente" id="campo-cliente" data-visible="no">
+            <label for="celda-cliente">Cliente:</label>
+            <span id="celda-cliente" class="celda-cliente" data-estado="inactivo"
+                  data-url="{% url 'horometros:arrendatario_del_equipo' 0 %}">
+                Elige un equipo para ver a quién se le pide.
+            </span>
+        </p>
+
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, solicitar</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="dialogo-lectura" class="dialogo-confirmacion"
+        {% if solicitud_en_edicion %}data-abrir-al-cargar="si"{% endif %}>
+    <p class="dialogo-contexto" id="lectura-contexto">
+        {% if solicitud_en_edicion %}
+        Horómetro del equipo {{ solicitud_en_edicion.equipo.codigo }} pedido por vía
+        {{ solicitud_en_edicion.get_fuente_display|lower }}{% if solicitud_en_edicion.cliente %}, a {{ solicitud_en_edicion.cliente.razon_social }}{% endif %}.
+        Horómetro actual: {{ solicitud_en_edicion.equipo.horometro_actual }}.
+        La lectura no puede ser menor.
+        {% endif %}
+    </p>
+    <form method="post" class="form" id="formulario-lectura"
+          {% if solicitud_en_edicion %}action="{% url 'horometros:registrar_lectura' solicitud_en_edicion.id %}"{% endif %}>
+        {% csrf_token %}
+        {{ form_lectura.as_p }}
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, registrar</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="dialogo-borrar" class="dialogo-confirmacion">
+    <p>¿Borrar esta solicitud de horómetro?</p>
+    <div class="dialogo-acciones">
+        <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+        <button type="button" class="btn btn-si" id="boton-borrar-seguir">Sí</button>
+    </div>
+</dialog>
+
+<dialog id="dialogo-borrar-confirmar" class="dialogo-confirmacion">
+    <p>
+        Se borra del registro y no se puede deshacer. Si el horómetro se llegó a
+        pedir, no quedará constancia de que se pidió.
+    </p>
+    <form method="post" id="formulario-borrar">
+        {% csrf_token %}
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, borrar</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{% static 'js/parametros.js' %}"></script>
+<script src="{% static 'js/ventana.js' %}"></script>
+<script src="{% static 'js/plegables.js' %}"></script>
+<script src="{% static 'js/borrado.js' %}"></script>
+<script src="{% static 'js/horometros.js' %}"></script>
+<script src="{% static 'js/solicitud-horometro.js' %}"></script>
+{% endblock %}

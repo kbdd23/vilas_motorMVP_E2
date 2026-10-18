@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Planes de mantención — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Planes de mantención</h1>
+<p class="page-subtitle">Planes y servicios por tipo de equipo.</p>
+
+<p>
+    <a class="btn btn-primary" href="{% url 'mantencion:crear_plan' %}">Crear plan</a>
+    <a class="btn btn-secondary" href="{% url 'mantencion:crear_servicio' %}">Crear servicio</a>
+</p>
+
+<h2>Planes</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Tipo de equipo</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for plan in planes %}
+        <tr>
+            <td>{{ plan.nombre }}</td>
+            <td>{{ plan.tipo_equipo.nombre }}</td>
+            <td>
+                <div class="celda-acciones">
+                    <a class="btn btn-secondary" href="{% url 'mantencion:editar_plan' plan.id %}">Editar</a>
+                    {% if plan.total_servicios == 0 %}
+                    <button type="button" class="btn btn-danger"
+                            data-borrar="{% url 'mantencion:borrar_plan' plan.id %}">Borrar</button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No hay planes registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Servicios</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Plan</th>
+            <th>Intervalo (horas)</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for servicio in servicios %}
+        <tr>
+            <td>{{ servicio.nombre }}</td>
+            <td>{{ servicio.plan.nombre }}</td>
+            <td>{{ servicio.intervalo_horas|default:"—" }}</td>
+            <td>
+                <div class="celda-acciones">
+                    <a class="btn btn-secondary" href="{% url 'mantencion:editar_servicio' servicio.id %}">Editar</a>
+                    {% if servicio.total_ots == 0 %}
+                    <button type="button" class="btn btn-danger"
+                            data-borrar="{% url 'mantencion:borrar_servicio' servicio.id %}">Borrar</button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No hay servicios registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<dialog id="dialogo-borrar" class="dialogo-confirmacion">
+    <p>¿Borrar este registro?</p>
+    <div class="dialogo-acciones">
+        <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+        <button type="button" class="btn btn-si" id="boton-borrar-seguir">Sí</button>
+    </div>
+</dialog>
+
+<dialog id="dialogo-borrar-confirmar" class="dialogo-confirmacion">
+    <p>Se borra del registro y no se puede deshacer.</p>
+    <form method="post" id="formulario-borrar">
+        {% csrf_token %}
+        <div class="dialogo-acciones">
+            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-si">Sí, borrar</button>
+        </div>
+    </form>
+</dialog>
+
+<script src="{% static 'js/borrado.js' %}"></script>
+<script>
+    iniciarCierreDeDialogos();
+    iniciarBorradoEnDosPasos();
+</script>
+{% endblock %}
