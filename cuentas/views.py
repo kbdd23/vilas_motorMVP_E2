@@ -49,6 +49,25 @@ def crear_cliente(request):
 
 
 @login_not_required
+def diagnostico(request):
+    """Informa qué backend de correo está activo en este deployment.
+
+    Solo devuelve booleanos y nombres de configuración: ninguna credencial.
+    Existe para comprobar el entorno de producción y se retira después.
+    """
+    from django.conf import settings
+    from django.http import JsonResponse
+
+    return JsonResponse({
+        'backend': settings.EMAIL_BACKEND,
+        'brevo_key_configurada': bool(settings.BREVO_API_KEY),
+        'brevo_remitente': settings.BREVO_REMITENTE,
+        'gmail_usuario_configurado': bool(settings.EMAIL_HOST_USER),
+        'remitente_por_defecto': settings.DEFAULT_FROM_EMAIL,
+    })
+
+
+@login_not_required
 def registro(request):
     """Alta de cuenta desde la pantalla de login.
 
