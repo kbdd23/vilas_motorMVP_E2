@@ -16,5 +16,7 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Entrar</button>
     </form>
+
+    <p class="page-subtitle">¿No tienes cuenta? <a href="{% url 'cuentas:registro' %}">Registrarse</a></p>
 </div>
 {% endblock %}

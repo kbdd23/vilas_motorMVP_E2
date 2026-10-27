@@ -1,7 +1,9 @@
+from django.contrib.auth import login as auth_login
+from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
 
 from arriendos.models import Arriendo
-from cuentas.forms import ClienteForm
+from cuentas.forms import ClienteForm, RegistroForm
 from cuentas.models import Cliente
 from flota.models import Equipo
 from flota.services import ESTADOS_SIN_DEVOLVER
@@ -38,6 +40,28 @@ def crear_cliente(request):
     else:
         form = ClienteForm()
     return render(request, 'cuentas/crear_cliente.html', {'form': form})
+
+
+@login_not_required
+def registro(request):
+    """Alta de cuenta desde la pantalla de login.
+
+    Quien se registra entra como planificador: es el único rol del sistema. Al
+    terminar queda con la sesión abierta, para no obligarlo a escribir de nuevo
+    las credenciales que acaba de crear.
+    """
+    if request.user.is_authenticated:
+        return redirect('cuentas:dashboard')
+
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+            auth_login(request, usuario)
+            return redirect('cuentas:dashboard')
+    else:
+        form = RegistroForm()
+    return render(request, 'cuentas/registro.html', {'form': form})
 
 
 def dashboard(request):

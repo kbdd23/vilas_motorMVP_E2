@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear cuenta — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+    <h1>Crear cuenta</h1>
+    <p class="page-subtitle">Alta de planificador.</p>
+
+    {% if form.errors %}
+        <div class="form-errors">Revisa los datos ingresados.</div>
+    {% endif %}
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Registrarse</button>
+        <a class="btn btn-secondary" href="{% url 'cuentas:login' %}">Ya tengo cuenta</a>
+    </form>
+</div>
+{% endblock %}
