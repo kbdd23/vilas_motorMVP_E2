@@ -145,15 +145,24 @@ SECURE_REFERRER_POLICY = 'same-origin'
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
 
-# Correo saliente. Con credenciales en el entorno usa Gmail por SMTP; sin ellas
-# imprime el mensaje en consola, para que el desarrollo local no dependa del correo.
+# Correo saliente, por orden de preferencia: API HTTP de Brevo (sirve en Vercel,
+# que bloquea SMTP), Gmail por SMTP, y consola cuando no hay credenciales.
+BREVO_API_KEY = os.getenv('BREVO_API_KEY', '')
+BREVO_REMITENTE = os.getenv('BREVO_REMITENTE', 'franciscojavier.inst@gmail.com')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
+
+if BREVO_API_KEY:
+    EMAIL_BACKEND = 'cuentas.email_backends.BrevoEmailBackend'
+    DEFAULT_FROM_EMAIL = f'Vilas Motor <{BREVO_REMITENTE}>'
+elif EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+    # El 465 cifra desde el saludo; el 587 negocia el cifrado con STARTTLS.
+    EMAIL_USE_SSL = EMAIL_PORT == 465
+    EMAIL_USE_TLS = EMAIL_PORT == 587
+    EMAIL_TIMEOUT = 10
     DEFAULT_FROM_EMAIL = f'Vilas Motor <{EMAIL_HOST_USER}>'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

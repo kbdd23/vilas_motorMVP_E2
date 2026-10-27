@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
@@ -14,6 +16,8 @@ from mantencion.models import OrdenTrabajo
 from mantencion.services import CalculadoraProximoServicio
 
 UMBRAL_ALERTA_HORAS = 100
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -60,7 +64,12 @@ def registro(request):
         if form.is_valid():
             usuario = form.save()
             auth_login(request, usuario)
-            enviarCodigoVerificacion(usuario)
+            try:
+                enviarCodigoVerificacion(usuario)
+            except Exception:
+                # Si el correo falla, la cuenta ya existe: se deja entrar a la
+                # pantalla de verificación, donde puede pedir otro código.
+                logger.exception('No se pudo enviar el código de verificación a %s', usuario.email)
             return redirect('cuentas:verificar')
     else:
         form = RegistroForm()
