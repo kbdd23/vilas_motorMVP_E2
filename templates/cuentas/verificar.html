@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Verificar cuenta — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+    <h1>Confirma tu cuenta</h1>
+    <p class="page-subtitle">Enviamos un código de 6 caracteres a {{ user.email }}.</p>
+
+    {% if reenviado %}
+        <div class="form-errors">Te enviamos un código nuevo.</div>
+    {% elif form.errors %}
+        <div class="form-errors">El código no es correcto o ya venció.</div>
+    {% endif %}
+
+    <form method="post" class="form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Confirmar</button>
+    </form>
+
+    <form method="post" action="{% url 'cuentas:reenviar_codigo' %}" class="form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary">Enviar otro código</button>
+    </form>
+</div>
+{% endblock %}

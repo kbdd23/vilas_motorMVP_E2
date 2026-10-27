@@ -45,3 +45,17 @@ class RegistroForm(forms.Form):
             password=self.cleaned_data['password'],
             nombre=nombre,
         )
+
+
+class VerificacionForm(forms.Form):
+    """Código de seis caracteres que llega al correo de la cuenta."""
+
+    codigo = forms.CharField(
+        label='Código',
+        max_length=6,
+        min_length=6,
+        widget=forms.TextInput(attrs={'autofocus': True, 'autocomplete': 'one-time-code'}),
+    )
+
+    def clean_codigo(self):
+        return self.cleaned_data['codigo'].strip().upper()

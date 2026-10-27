@@ -48,6 +48,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     password = models.CharField(max_length=255, db_column='password_hash')
 
+    # Verificación del correo: el código se guarda mientras la cuenta no se confirma.
+    email_verificado = models.BooleanField(default=False)
+    codigo_verificacion = models.CharField(max_length=6, blank=True)
+    codigo_expira = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         db_table = 'usuario'
 

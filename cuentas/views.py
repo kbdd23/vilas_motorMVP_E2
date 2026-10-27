@@ -1,10 +1,12 @@
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from arriendos.models import Arriendo
-from cuentas.forms import ClienteForm, RegistroForm
+from cuentas.forms import ClienteForm, RegistroForm, VerificacionForm
 from cuentas.models import Cliente
+from cuentas.services import codigoEsValido, confirmarCuenta, enviarCodigoVerificacion
 from flota.models import Equipo
 from flota.services import ESTADOS_SIN_DEVOLVER
 from horometros.models import SolicitudHorometro
@@ -46,9 +48,9 @@ def crear_cliente(request):
 def registro(request):
     """Alta de cuenta desde la pantalla de login.
 
-    Quien se registra entra como planificador: es el único rol del sistema. Al
-    terminar queda con la sesión abierta, para no obligarlo a escribir de nuevo
-    las credenciales que acaba de crear.
+    Quien se registra entra como planificador: es el único rol del sistema. La
+    cuenta nace sin verificar, con un código recién enviado al correo; hasta que
+    lo escriba, el middleware lo devuelve a esta pantalla.
     """
     if request.user.is_authenticated:
         return redirect('cuentas:dashboard')
@@ -58,10 +60,39 @@ def registro(request):
         if form.is_valid():
             usuario = form.save()
             auth_login(request, usuario)
-            return redirect('cuentas:dashboard')
+            enviarCodigoVerificacion(usuario)
+            return redirect('cuentas:verificar')
     else:
         form = RegistroForm()
     return render(request, 'cuentas/registro.html', {'form': form})
+
+
+def verificar(request):
+    """Confirma la cuenta con el código que llegó al correo."""
+    if request.user.email_verificado:
+        return redirect('cuentas:dashboard')
+
+    if request.method == 'POST':
+        form = VerificacionForm(request.POST)
+        if form.is_valid():
+            if codigoEsValido(request.user, form.cleaned_data['codigo']):
+                confirmarCuenta(request.user)
+                return redirect('cuentas:dashboard')
+            form.add_error('codigo', 'El código no es correcto o ya venció.')
+    else:
+        form = VerificacionForm()
+
+    return render(request, 'cuentas/verificar.html', {
+        'form': form,
+        'reenviado': request.GET.get('enviado') == '1',
+    })
+
+
+def reenviar_codigo(request):
+    """Manda un código nuevo a la cuenta que todavía no se confirma."""
+    if request.method == 'POST' and not request.user.email_verificado:
+        enviarCodigoVerificacion(request.user)
+    return redirect(f"{reverse('cuentas:verificar')}?enviado=1")
 
 
 def dashboard(request):
