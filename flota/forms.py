@@ -12,4 +12,4 @@ class TipoEquipoForm(forms.ModelForm):
 class EquipoForm(forms.ModelForm):
     class Meta:
         model = Equipo
-        fields = ['codigo', 'tipo_equipo', 'patente', 'marca', 'modelo', 'numero_serie', 'estado', 'horometro_actual']
+        fields = ['tipo_equipo', 'patente', 'marca', 'modelo', 'numero_serie', 'estado', 'horometro_actual']

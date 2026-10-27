@@ -1,6 +1,8 @@
 from decimal import Decimal
 
-from django.db import models
+from django.db import IntegrityError, models, transaction
+
+PREFIJO_CODIGO = 'EQ-'
 
 
 class TipoEquipo(models.Model):
@@ -37,7 +39,7 @@ class Equipo(models.Model):
         db_column='id_tipo_equipo',
         related_name='equipos',
     )
-    codigo = models.CharField(max_length=30, unique=True)
+    codigo = models.CharField(max_length=30, unique=True, blank=True)
     patente = models.CharField(max_length=10, unique=True, null=True, blank=True)
     marca = models.CharField(max_length=50, null=True, blank=True)
     modelo = models.CharField(max_length=50, null=True, blank=True)
@@ -54,6 +56,40 @@ class Equipo(models.Model):
 
     def __str__(self):
         return self.codigo
+
+    def save(self, *args, **kwargs):
+        """Asigna un código correlativo si el equipo entra sin uno.
+
+        El código es un dato del sistema, no algo que el usuario escriba, por eso
+        se genera acá y no en el formulario. Si dos altas simultáneas calculan el
+        mismo correlativo, la segunda choca contra la restricción unique y se
+        reintenta con el siguiente.
+        """
+        if self.codigo:
+            return super().save(*args, **kwargs)
+
+        for intento in range(1, 4):
+            self.codigo = self._siguienteCodigo()
+            try:
+                with transaction.atomic():
+                    return super().save(*args, **kwargs)
+            except IntegrityError:
+                if intento == 3:
+                    raise
+                self.codigo = ''
+
+    @classmethod
+    def _siguienteCodigo(cls):
+        """Correlativo siguiente de la serie EQ-, según los códigos ya generados."""
+        codigos = cls.objects.filter(
+            codigo__startswith=PREFIJO_CODIGO
+        ).values_list('codigo', flat=True)
+        correlativos = [
+            int(codigo[len(PREFIJO_CODIGO):])
+            for codigo in codigos
+            if codigo[len(PREFIJO_CODIGO):].isdigit()
+        ]
+        return f'{PREFIJO_CODIGO}{max(correlativos, default=0) + 1:05d}'
 
     def cambiarEstado(self, estado):
         """Transiciona el estado del equipo y persiste el cambio.
