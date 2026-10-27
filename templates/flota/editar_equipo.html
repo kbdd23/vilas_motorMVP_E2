@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar {{ equipo.codigo }} — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Editar {{ equipo.codigo }}</h1>
+<p class="page-subtitle">Modificar los datos de la ficha del equipo.</p>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-secondary" href="{% url 'flota:detalle_equipo' equipo.id %}">Cancelar</a>
+</form>
+{% endblock %}

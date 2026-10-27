@@ -12,6 +12,7 @@
     {% if equipo.estado == 'DISPONIBLE' %}
     <a class="btn btn-secondary" href="{% url 'arriendos:crear_arriendo' %}?equipo={{ equipo.id }}">Crear arriendo</a>
     {% endif %}
+    <a class="btn btn-secondary" href="{% url 'flota:editar_equipo' equipo.id %}">Editar equipo</a>
 </p>
 
 <table>

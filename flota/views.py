@@ -52,6 +52,22 @@ def crear_equipo(request):
     return render(request, 'flota/crear_equipo.html', {'form': form})
 
 
+def editar_equipo(request, pk):
+    """Edita los datos de un equipo ya registrado.
+
+    El código no se edita: es un dato del sistema que se asignó al crear la ficha.
+    """
+    equipo = get_object_or_404(Equipo, pk=pk)
+    if request.method == 'POST':
+        form = EquipoForm(request.POST, instance=equipo)
+        if form.is_valid():
+            form.save()
+            return redirect('flota:detalle_equipo', pk=equipo.pk)
+    else:
+        form = EquipoForm(instance=equipo)
+    return render(request, 'flota/editar_equipo.html', {'form': form, 'equipo': equipo})
+
+
 def detalle_equipo(request, pk):
     """Ficha del equipo con su historial de lecturas, OT y arriendos.
 
