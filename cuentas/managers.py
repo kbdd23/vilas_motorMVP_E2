@@ -32,6 +32,9 @@ class UsuarioManager(BaseUserManager):
                 raise ValueError("create_user() no acepta inserción de campos.")
         campos_extra['is_staff'] = True
         campos_extra['is_superuser'] = False
+        # Las cuentas creadas por código (consola, seed_demo, pruebas) se dan por
+        # verificadas; las que se crean desde la pantalla de usuarios confirman su correo.
+        campos_extra.setdefault('email_verificado', True)
         rol = self._obtener_rol(self.ROL_PLANIFICADOR) #Ahora solo es planificador por "default" porque no existen más roles en el sistema
         return self._crear_usuario(email, password, rol, **campos_extra)
 
@@ -42,5 +45,6 @@ class UsuarioManager(BaseUserManager):
         campos_extra['is_staff'] = True
         campos_extra['is_superuser'] = True
         campos_extra['is_active'] = True
+        campos_extra.setdefault('email_verificado', True)
         rol = self._obtener_rol(self.ROL_PLANIFICADOR)
         return self._crear_usuario(email, password, rol, **campos_extra)

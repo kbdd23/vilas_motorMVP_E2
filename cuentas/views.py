@@ -1,13 +1,11 @@
-import logging
-
-from django.contrib.auth import login as auth_login
-from django.contrib.auth.decorators import login_not_required
+from django.contrib import messages
+from django.contrib.auth.decorators import login_not_required, user_passes_test
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from arriendos.models import Arriendo
-from cuentas.forms import ClienteForm, RegistroForm, VerificacionForm
-from cuentas.models import Cliente
+from cuentas.forms import ClienteForm, UsuarioForm, VerificacionForm
+from cuentas.models import Cliente, Usuario
 from cuentas.services import codigoEsValido, confirmarCuenta, enviarCodigoVerificacion
 from flota.models import Equipo
 from flota.services import ESTADOS_SIN_DEVOLVER
@@ -17,7 +15,6 @@ from mantencion.services import CalculadoraProximoServicio
 
 UMBRAL_ALERTA_HORAS = 100
 
-logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -48,6 +45,36 @@ def crear_cliente(request):
     return render(request, 'cuentas/crear_cliente.html', {'form': form})
 
 
+
+@user_passes_test(lambda usuario: usuario.is_staff)
+def lista_usuarios(request):
+    """Directorio de acceso. Solo el personal autorizado puede administrarlo."""
+    usuarios = Usuario.objects.select_related('rol', 'cliente').order_by('nombre', 'email')
+    return render(request, 'cuentas/usuarios.html', {'usuarios': usuarios})
+
+
+@user_passes_test(lambda usuario: usuario.is_staff)
+def crear_usuario(request):
+    """Crea una cuenta que inicia sesión con su dirección de correo.
+
+    Reemplaza el registro abierto: solo el personal autorizado da acceso al
+    sistema. La cuenta nace sin verificar y confirma su correo en el primer ingreso.
+    """
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST)
+        if form.is_valid():
+            usuario = form.save(commit=False)
+            # El alta desde la interfaz nunca entrega privilegios de superusuario.
+            usuario.is_staff = True
+            usuario.is_superuser = False
+            usuario.save()
+            messages.success(request, f'Usuario {usuario.email} creado correctamente.')
+            return redirect('cuentas:usuarios')
+    else:
+        form = UsuarioForm()
+    return render(request, 'cuentas/crear_usuario.html', {'form': form})
+
+
 @login_not_required
 def diagnostico(request):
     """Informa qué backend de correo está activo en este deployment.
@@ -66,33 +93,6 @@ def diagnostico(request):
         'remitente_por_defecto': settings.DEFAULT_FROM_EMAIL,
     })
 
-
-@login_not_required
-def registro(request):
-    """Alta de cuenta desde la pantalla de login.
-
-    Quien se registra entra como planificador: es el único rol del sistema. La
-    cuenta nace sin verificar, con un código recién enviado al correo; hasta que
-    lo escriba, el middleware lo devuelve a esta pantalla.
-    """
-    if request.user.is_authenticated:
-        return redirect('cuentas:dashboard')
-
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            usuario = form.save()
-            auth_login(request, usuario)
-            try:
-                enviarCodigoVerificacion(usuario)
-            except Exception:
-                # Si el correo falla, la cuenta ya existe: se deja entrar a la
-                # pantalla de verificación, donde puede pedir otro código.
-                logger.exception('No se pudo enviar el código de verificación a %s', usuario.email)
-            return redirect('cuentas:verificar')
-    else:
-        form = RegistroForm()
-    return render(request, 'cuentas/registro.html', {'form': form})
 
 
 def verificar(request):
