@@ -6,10 +6,35 @@
 <h1>Crear equipo</h1>
 <p class="page-subtitle">Agregar una máquina al inventario de la flota.</p>
 
-<form method="post" class="form">
+<form method="post" class="form form-card" id="equipo-form">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Crear</button>
-    <a class="btn btn-secondary" href="{% url 'flota:equipos' %}">Cancelar</a>
+    {% for field in form %}
+    <p{% if field.name == 'codigo' %} id="codigo-manual"{% endif %}>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+        {{ field.errors }}
+    </p>
+    {% endfor %}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Crear equipo</button>
+        <a class="btn btn-secondary" href="{% url 'flota:equipos' %}">Cancelar</a>
+    </div>
 </form>
+
+<script>
+    (function () {
+        const radios = document.querySelectorAll('input[name="modo_codigo"]');
+        const manual = document.getElementById('codigo-manual');
+        const input = document.getElementById('id_codigo');
+        function updateCodeMode() {
+            const selected = document.querySelector('input[name="modo_codigo"]:checked');
+            const automatico = selected && selected.value === 'AUTO';
+            manual.hidden = automatico;
+            input.disabled = automatico;
+        }
+        radios.forEach(radio => radio.addEventListener('change', updateCodeMode));
+        updateCodeMode();
+    }());
+</script>
 {% endblock %}
