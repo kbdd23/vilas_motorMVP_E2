@@ -5,7 +5,7 @@
 {% block content %}
 <div class="auth-box">
     <h1>Iniciar sesión</h1>
-    <p class="page-subtitle">Acceso del planificador.</p>
+    <p class="page-subtitle">Ingresa con el correo asociado a tu cuenta.</p>
 
     {% if form.errors %}
         <div class="form-errors">Email o contraseña incorrectos.</div>
@@ -16,5 +16,6 @@
         {{ form.as_p }}
         <button type="submit" class="btn btn-primary">Entrar</button>
     </form>
+    <p class="auth-helper"><a href="{% url 'cuentas:password_reset' %}">¿Olvidaste tu contraseña?</a></p>
 </div>
 {% endblock %}

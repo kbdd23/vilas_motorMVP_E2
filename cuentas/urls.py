@@ -1,5 +1,5 @@
 from django.contrib.auth import views as auth_views
-from django.urls import path
+from django.urls import path, reverse_lazy
 
 from . import views
 from .forms import LoginForm
@@ -19,6 +19,22 @@ urlpatterns = [
         authentication_form=LoginForm,
         redirect_authenticated_user=True,
     ), name='login'),
+    path('recuperar-acceso/', auth_views.PasswordResetView.as_view(
+        template_name='cuentas/password_reset_form.html',
+        email_template_name='cuentas/password_reset_email.txt',
+        subject_template_name='cuentas/password_reset_subject.txt',
+        success_url=reverse_lazy('cuentas:password_reset_done'),
+    ), name='password_reset'),
+    path('recuperar-acceso/enviado/', auth_views.PasswordResetDoneView.as_view(
+        template_name='cuentas/password_reset_done.html',
+    ), name='password_reset_done'),
+    path('restablecer/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='cuentas/password_reset_confirm.html',
+        success_url=reverse_lazy('cuentas:password_reset_complete'),
+    ), name='password_reset_confirm'),
+    path('restablecer/completo/', auth_views.PasswordResetCompleteView.as_view(
+        template_name='cuentas/password_reset_complete.html',
+    ), name='password_reset_complete'),
     path('verificar/', views.verificar, name='verificar'),
     path('verificar/reenviar/', views.reenviar_codigo, name='reenviar_codigo'),
     path('diagnostico/', views.diagnostico, name='diagnostico'),

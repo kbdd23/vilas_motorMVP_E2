@@ -36,6 +36,7 @@ AUTH_USER_MODEL = 'cuentas.Usuario'
 LOGIN_URL = 'cuentas:login'
 LOGIN_REDIRECT_URL = 'cuentas:home'
 LOGOUT_REDIRECT_URL = 'cuentas:login'
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
