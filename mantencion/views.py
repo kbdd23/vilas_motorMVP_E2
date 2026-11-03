@@ -35,7 +35,14 @@ def _render_lista(request, form_orden=None, abrir_orden=False):
     El diálogo se abre solo cuando el POST no pasó la validación, para que el error
     quede a la vista; en el caso normal lo abre el navegador.
     """
+    filtro_estado = request.GET.get('estado')
     ordenes = OrdenTrabajo.objects.select_related('equipo', 'servicio_plan').order_by('-id')
+    if filtro_estado == 'ABIERTAS':
+        ordenes = ordenes.exclude(estado=OrdenTrabajo.Estado.CERRADA)
+        etiqueta_filtro = 'Órdenes abiertas'
+    else:
+        filtro_estado = None
+        etiqueta_filtro = None
     if form_orden is None:
         initial = {'equipo': request.GET.get('equipo')}
         if request.GET.get('servicio'):
@@ -45,6 +52,8 @@ def _render_lista(request, form_orden=None, abrir_orden=False):
         'ordenes': ordenes,
         'form_orden': form_orden,
         'abrir_orden': abrir_orden,
+        'filtro_estado': filtro_estado,
+        'etiqueta_filtro': etiqueta_filtro,
     })
 
 
