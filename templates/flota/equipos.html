@@ -5,7 +5,11 @@
 
 {% block content %}
 <h1>Equipos</h1>
-<p class="page-subtitle">Inventario de la flota.</p>
+<p class="page-subtitle">{% if estado_filtrado %}Mostrando: {{ etiqueta_estado_filtrado }}.{% else %}Inventario completo de la flota.{% endif %}</p>
+
+{% if estado_filtrado %}
+<div class="active-filter"><span>Filtro activo: {{ etiqueta_estado_filtrado }}</span><a href="{% url 'flota:equipos' %}">Ver toda la flota</a></div>
+{% endif %}
 
 <p>
     <a class="btn btn-primary" href="{% url 'flota:crear_equipo' %}">Crear equipo</a>

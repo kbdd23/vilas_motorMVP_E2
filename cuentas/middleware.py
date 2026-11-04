@@ -6,7 +6,7 @@ class VerificacionPendienteMiddleware:
     """Manda a la pantalla del código a quien tiene la cuenta sin verificar."""
 
     # Rutas que se pueden usar sin la cuenta confirmada.
-    RUTAS_LIBRES = ('/verificar/', '/login/', '/registro/', '/logout/', '/static/')
+    RUTAS_LIBRES = ('/verificar/', '/login/', '/logout/', '/static/')
 
     def __init__(self, get_response):
         self.get_response = get_response

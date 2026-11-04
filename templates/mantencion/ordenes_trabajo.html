@@ -5,7 +5,11 @@
 
 {% block content %}
 <h1>Órdenes de trabajo</h1>
-<p class="page-subtitle">Mantenciones programadas y ejecutadas.</p>
+<p class="page-subtitle">{% if etiqueta_filtro %}{{ etiqueta_filtro }}: programadas o en curso.{% else %}Mantenciones programadas y ejecutadas.{% endif %}</p>
+
+{% if filtro_estado %}
+<div class="active-filter"><span>Filtro activo: {{ etiqueta_filtro }}</span><a href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas las órdenes</a></div>
+{% endif %}
 
 <p>
     <button type="button" class="btn btn-primary" data-abrir-orden>Crear OT</button>

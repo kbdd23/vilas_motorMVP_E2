@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar usuario — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div>
+        <h1>Agregar usuario</h1>
+        <p class="page-subtitle">La persona podrá ingresar usando este correo y la contraseña definida.</p>
+    </div>
+    <form method="post" class="form form-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Crear usuario</button>
+            <a class="btn btn-secondary" href="{% url 'cuentas:usuarios' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

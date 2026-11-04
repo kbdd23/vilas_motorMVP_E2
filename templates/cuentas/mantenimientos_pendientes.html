@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} — Vilas Motor{% endblock %}
+
+{% block content %}
+<section class="dashboard-heading">
+    <div>
+        <p class="eyebrow">Bandeja operativa</p>
+        <h1>{{ titulo }}</h1>
+        <p class="page-subtitle">{{ descripcion }}</p>
+    </div>
+    <a class="btn btn-secondary" href="{% url 'cuentas:dashboard' %}">← Dashboard</a>
+</section>
+
+<section class="dashboard-kpis maintenance-kpis" aria-label="Resumen de mantenciones pendientes">
+    <article class="kpi-card kpi-warning">
+        <span class="kpi-label">Total por atender</span>
+        <strong class="kpi-value">{{ filas|length }}</strong>
+        <span class="kpi-detail">equipos en esta bandeja</span>
+    </article>
+    <article class="kpi-card kpi-critical">
+        <span class="kpi-label">Vencidas</span>
+        <strong class="kpi-value">{{ servicios_vencidos }}</strong>
+        <span class="kpi-detail">requieren priorización</span>
+    </article>
+    <article class="kpi-card kpi-warning">
+        <span class="kpi-label">Próximas</span>
+        <strong class="kpi-value">{{ servicios_por_vencer }}</strong>
+        <span class="kpi-detail">dentro del umbral configurado</span>
+    </article>
+</section>
+
+<section class="dashboard-section">
+    <div class="section-title-row"><div><h2>Equipos que requieren mantención</h2><p>Programa la orden de trabajo directamente desde esta lista.</p></div></div>
+    <div class="table-card">
+        <table>
+            <thead><tr><th>Equipo</th><th>Tipo</th><th>Próximo servicio</th><th>Horas restantes</th><th>Prioridad</th><th>Acción</th></tr></thead>
+            <tbody>
+                {% for fila in filas %}
+                <tr>
+                    <td><a href="{% url 'flota:detalle_equipo' fila.equipo.id %}">{{ fila.equipo.codigo }}</a></td>
+                    <td>{{ fila.equipo.tipo_equipo.nombre }}</td>
+                    <td>{{ fila.proximo.nombre }}</td>
+                    <td>{{ fila.horas_restantes|floatformat:"0" }}</td>
+                    <td>{% if fila.estado_alerta == 'VENCIDO' %}<span class="badge badge-alerta">Vencida</span>{% else %}<span class="badge badge-warn">Próxima</span>{% endif %}</td>
+                    <td><a class="btn btn-primary" href="{% url 'mantencion:crear_orden' %}?equipo={{ fila.equipo.id }}&servicio={{ fila.proximo.id }}">Crear OT</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">{{ mensaje_vacio }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

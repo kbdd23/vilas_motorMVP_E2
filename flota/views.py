@@ -15,10 +15,18 @@ def lista_equipos(request):
     El desplegable de "Cambiar estado" sale de acá para que la pantalla y el modelo
     no puedan discrepar sobre qué estados existen.
     """
+    estado = request.GET.get('estado')
+    estados_validos = dict(Equipo.Estado.choices)
     equipos = Equipo.objects.select_related('tipo_equipo').order_by('codigo')
+    if estado in estados_validos:
+        equipos = equipos.filter(estado=estado)
+    else:
+        estado = None
     return render(request, 'flota/equipos.html', {
         'equipos': equipos,
         'estados': Equipo.Estado.choices,
+        'estado_filtrado': estado,
+        'etiqueta_estado_filtrado': estados_validos.get(estado),
     })
 
 
@@ -55,7 +63,7 @@ def crear_equipo(request):
 def editar_equipo(request, pk):
     """Edita los datos de un equipo ya registrado.
 
-    El código no se edita: es un dato del sistema que se asignó al crear la ficha.
+    El código no se edita: se asignó al crear la ficha, automático o manual.
     """
     equipo = get_object_or_404(Equipo, pk=pk)
     if request.method == 'POST':
