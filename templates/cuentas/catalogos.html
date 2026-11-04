@@ -3,14 +3,25 @@
 {% block title %}Catálogos — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Catálogos</h1>
-<p class="page-subtitle">Listados maestros del sistema.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Sistema</span>
+                <h1>Catálogos</h1>
+                <p class="sub">Listados maestros del sistema.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="stat-grid">
-    <a class="card-link" href="{% url 'cuentas:clientes' %}">Clientes</a>
-    <a class="card-link" href="{% url 'flota:equipos' %}">Equipos</a>
-    <a class="card-link" href="{% url 'flota:tipos_equipo' %}">Tipos de equipo</a>
-    <a class="card-link" href="{% url 'insumos:insumos' %}">Insumos</a>
-    <a class="card-link" href="{% url 'mantencion:planes' %}">Planes de mantención</a>
+<div class="container">
+    <div class="que-hacer">
+        <a class="que-hacer-card que-hacer-neutra" href="{% url 'cuentas:clientes' %}"><span class="que-hacer-titulo">Clientes</span><span class="que-hacer-detalle">Cartera de empresas y contactos.</span></a>
+        <a class="que-hacer-card que-hacer-neutra" href="{% url 'flota:equipos' %}"><span class="que-hacer-titulo">Equipos</span><span class="que-hacer-detalle">Inventario de la flota.</span></a>
+        <a class="que-hacer-card que-hacer-neutra" href="{% url 'flota:tipos_equipo' %}"><span class="que-hacer-titulo">Tipos de equipo</span><span class="que-hacer-detalle">Categorías y unidad de medida.</span></a>
+        <a class="que-hacer-card que-hacer-neutra" href="{% url 'insumos:insumos' %}"><span class="que-hacer-titulo">Insumos</span><span class="que-hacer-detalle">Catálogo para mantención.</span></a>
+        <a class="que-hacer-card que-hacer-neutra" href="{% url 'mantencion:planes' %}"><span class="que-hacer-titulo">Planes de mantención</span><span class="que-hacer-detalle">Planes y servicios por tipo.</span></a>
+    </div>
 </div>
 {% endblock %}

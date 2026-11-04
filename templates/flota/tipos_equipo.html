@@ -3,31 +3,34 @@
 {% block title %}Tipos de equipo — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Tipos de equipo</h1>
-<p class="page-subtitle">Categorías de la flota y su unidad de medida.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Catálogos</span>
+                <h1>Tipos de equipo</h1>
+                <p class="sub">Categorías de la flota y su unidad de medida.</p>
+            </div>
+            <div class="herramientas"><a class="btn btn-primary" href="{% url 'flota:crear_tipo_equipo' %}">Crear tipo</a></div>
+        </div>
+    </div>
+</section>
 
-<p>
-    <a class="btn btn-primary" href="{% url 'flota:crear_tipo_equipo' %}">Crear tipo</a>
-</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Unidad de medida</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for tipo in tipos %}
-        <tr>
-            <td>{{ tipo.nombre }}</td>
-            <td>{{ tipo.get_unidad_medida_display }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="2">No hay tipos de equipo registrados.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Categorías</h2><p>{{ tipos|length }} tipos.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead><tr><th>Nombre</th><th>Unidad de medida</th></tr></thead>
+                <tbody>
+                    {% for tipo in tipos %}
+                    <tr><td>{{ tipo.nombre }}</td><td>{{ tipo.get_unidad_medida_display }}</td></tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="vacio">No hay tipos de equipo registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 {% endblock %}

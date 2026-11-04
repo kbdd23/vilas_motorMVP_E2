@@ -3,43 +3,40 @@
 {% block title %}Clientes — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Clientes</h1>
-<p class="page-subtitle">Cartera de clientes.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Catálogos</span>
+                <h1>Clientes</h1>
+                <p class="sub">Cartera de clientes.</p>
+            </div>
+            <div class="herramientas"><a class="btn btn-primary" href="{% url 'cuentas:crear_cliente' %}">Crear cliente</a></div>
+        </div>
+    </div>
+</section>
 
-<p>
-    <a class="btn btn-primary" href="{% url 'cuentas:crear_cliente' %}">Crear cliente</a>
-</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>RUT</th>
-            <th>Razón social</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Activo</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for cliente in clientes %}
-        <tr>
-            <td>{{ cliente.rut }}</td>
-            <td>{{ cliente.razon_social }}</td>
-            <td>{{ cliente.email_contacto|default:"—" }}</td>
-            <td>{{ cliente.telefono|default:"—" }}</td>
-            <td>
-                {% if cliente.activo %}
-                    <span class="badge badge-ok">Activo</span>
-                {% else %}
-                    <span class="badge badge-neutral">Inactivo</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">No hay clientes registrados.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Clientes</h2><p>{{ clientes|length }} registros.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead><tr><th>RUT</th><th>Razón social</th><th>Email</th><th>Teléfono</th><th>Activo</th></tr></thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>{{ cliente.rut }}</td>
+                        <td>{{ cliente.razon_social }}</td>
+                        <td>{{ cliente.email_contacto|default:"—" }}</td>
+                        <td>{{ cliente.telefono|default:"—" }}</td>
+                        <td>{% if cliente.activo %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-neutral">Inactivo</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="vacio">No hay clientes registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 {% endblock %}

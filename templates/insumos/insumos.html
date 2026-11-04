@@ -3,33 +3,34 @@
 {% block title %}Insumos — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Insumos</h1>
-<p class="page-subtitle">Catálogo de insumos para mantención.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Catálogos</span>
+                <h1>Insumos</h1>
+                <p class="sub">Catálogo de insumos para mantención.</p>
+            </div>
+            <div class="herramientas"><a class="btn btn-primary" href="{% url 'insumos:crear_insumo' %}">Crear insumo</a></div>
+        </div>
+    </div>
+</section>
 
-<p>
-    <a class="btn btn-primary" href="{% url 'insumos:crear_insumo' %}">Crear insumo</a>
-</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Unidad de medida</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for insumo in insumos %}
-        <tr>
-            <td>{{ insumo.codigo }}</td>
-            <td>{{ insumo.nombre }}</td>
-            <td>{{ insumo.unidad_medida|default:"—" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">No hay insumos registrados.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Catálogo</h2><p>{{ insumos|length }} insumos.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead><tr><th>Código</th><th>Nombre</th><th>Unidad de medida</th></tr></thead>
+                <tbody>
+                    {% for insumo in insumos %}
+                    <tr><td>{{ insumo.codigo }}</td><td>{{ insumo.nombre }}</td><td>{{ insumo.unidad_medida|default:"—" }}</td></tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="vacio">No hay insumos registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 {% endblock %}

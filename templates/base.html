@@ -1,51 +1,58 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Vilas Motor{% endblock %}</title>
-    <script>if (localStorage.getItem('vilas-theme') === 'light') document.documentElement.removeAttribute('data-theme');</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'maqueta.css' %}">
 </head>
-<body class="{% if user.is_authenticated %}app-body{% endif %}">
-{% if user.is_authenticated %}
-<aside class="app-sidebar">
-    <a class="sidebar-brand" href="{% url 'cuentas:dashboard' %}"><img src="{% static 'assets/simbolo-vilasmotor.png' %}" alt="Vilas Motor"><span>VILAS MOTOR</span></a>
-    <nav class="sidebar-nav" aria-label="Navegación principal">
-        <a href="{% url 'cuentas:dashboard' %}"><span>⌂</span>Dashboard</a>
-        <a href="{% url 'flota:equipos' %}"><span>▣</span>Flota</a>
-        <a href="{% url 'mantencion:ordenes_trabajo' %}"><span>▤</span>Órdenes de trabajo</a>
-        <a href="{% url 'mantencion:planes' %}"><span>⚒</span>Mantención</a>
-        <a href="{% url 'horometros:index' %}"><span>◷</span>Horómetros</a>
-        <a href="{% url 'arriendos:arriendos' %}"><span>⌘</span>Arriendos</a>
-        <a href="{% url 'cuentas:catalogos' %}"><span>▤</span>Catálogos</a>
-        {% if user.is_staff %}<a href="{% url 'cuentas:usuarios' %}"><span>♙</span>Usuarios</a>{% endif %}
-    </nav>
-    <form method="post" action="{% url 'cuentas:logout' %}" class="sidebar-logout">{% csrf_token %}<button type="submit"><span>◔</span>Cerrar sesión</button></form>
-</aside>
-<div class="app-content">
-    <header class="app-topbar">
-        <div class="top-search"><span>⌕</span><input type="search" placeholder="Buscar equipo, OT o cliente..." aria-label="Buscar equipo, orden o cliente"></div>
-        <div class="top-user"><span class="notification-dot">●</span><span class="user-avatar">{{ user.nombre|slice:":1"|upper }}</span><span>{{ user.email }}</span><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar tema">◐</button></div>
-    </header>
-{% else %}
-<header class="site-header"><div class="container header-inner"><a class="brand" href="{% url 'cuentas:home' %}"><img src="{% static 'assets/simbolo-vilasmotor.png' %}" alt="Vilas Motor" class="brand-logo"><span class="brand-name">Vilas Motor</span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar tema">◐</button></div></header>
-{% endif %}
+<body>
+<a class="saltar" href="#contenido">Saltar al contenido</a>
 
-<main class="{% if user.is_authenticated %}app-main{% else %}container{% endif %}">
-    {% if not is_dashboard %}<button class="btn btn-back back-button" type="button" onclick="history.back()">← Volver</button>{% endif %}
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="brand" href="{% url 'cuentas:dashboard' %}"><img class="brand-logo" src="{% static 'assets/simbolo-vilasmotor.png' %}" alt="Vilas Motor"><span>VILAS MOTOR</span></a>
+        <nav class="main-nav" aria-label="Navegación principal">
+            <a href="{% url 'cuentas:dashboard' %}" {% if is_dashboard %}class="activo"{% endif %}>Dashboard</a>
+            <a href="{% url 'flota:equipos' %}">Flota</a>
+            <a href="{% url 'mantencion:ordenes_trabajo' %}">Órdenes</a>
+            <a href="{% url 'mantencion:planes' %}">Mantención</a>
+            <a href="{% url 'horometros:index' %}">Horómetros</a>
+            <a href="{% url 'arriendos:arriendos' %}">Arriendos</a>
+            <a href="{% url 'cuentas:catalogos' %}">Catálogos</a>
+            {% if user.is_staff %}<a href="{% url 'cuentas:usuarios' %}">Usuarios</a>{% endif %}
+        </nav>
+        <div class="header-right">
+            {% if user.is_authenticated %}
+            <span class="gps-estado"><span class="punto-vivo"></span>En línea</span>
+            <span class="avatar">{{ user.nombre|slice:":1"|upper }}</span>
+            <form method="post" action="{% url 'cuentas:logout' %}" style="display:inline-flex">{% csrf_token %}<button class="icon-btn" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">⏻</button></form>
+            {% else %}
+            <a class="btn btn-primary" href="{% url 'cuentas:login' %}">Ingresar</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
+<div class="franja"></div>
+
+<main id="contenido">
+    {% if not is_dashboard %}<div class="container" style="padding-top:20px"><button class="btn btn-secondary btn-chico back-button" type="button" onclick="history.back()">← Volver</button></div>{% endif %}
     {% block content %}{% endblock %}
 </main>
 
 {% if messages %}<div class="toast-contenedor">{% for mensaje in messages %}<div class="toast toast-{{ mensaje.tags }}" role="status">{{ mensaje }}</div>{% endfor %}</div>{% endif %}
 
-{% if user.is_authenticated %}</div>{% else %}<footer class="site-footer"><div class="container"><span>Vilas Motor — Sistema de gestión de mantenimiento</span></div></footer>{% endif %}
+<footer class="site-footer"><div class="container"><span>Vilas Motor — Sistema de gestión de mantenimiento</span></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="{% static 'js/toasts.js' %}"></script>
 <script src="{% static 'js/sortable-tables.js' %}"></script>
-<script>document.getElementById('theme-toggle').addEventListener('click', function () { var root=document.documentElement; var dark=root.getAttribute('data-theme')==='dark'; if(dark){root.removeAttribute('data-theme');localStorage.setItem('vilas-theme','light')}else{root.setAttribute('data-theme','dark');localStorage.setItem('vilas-theme','dark')}}); if(history.length>1){var backButton=document.querySelector('.back-button');if(backButton)backButton.classList.add('visible')}</script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

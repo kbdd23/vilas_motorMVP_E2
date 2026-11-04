@@ -4,87 +4,94 @@
 {% block title %}Órdenes de trabajo — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Órdenes de trabajo</h1>
-<p class="page-subtitle">{% if etiqueta_filtro %}{{ etiqueta_filtro }}: programadas o en curso.{% else %}Mantenciones programadas y ejecutadas.{% endif %}</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Mantención</span>
+                <h1>Órdenes de trabajo</h1>
+                <p class="sub">{% if etiqueta_filtro %}{{ etiqueta_filtro }}: programadas o en curso.{% else %}Mantenciones programadas y ejecutadas.{% endif %}</p>
+            </div>
+            <div class="herramientas"><button type="button" class="btn btn-primary" data-abrir-orden>Crear OT</button></div>
+        </div>
+    </div>
+</section>
 
-{% if filtro_estado %}
-<div class="active-filter"><span>Filtro activo: {{ etiqueta_filtro }}</span><a href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas las órdenes</a></div>
-{% endif %}
+<div class="container">
+    {% if filtro_estado %}
+    <div class="seccion-titulo"><h2>Filtro activo</h2><span class="nota">{{ etiqueta_filtro }}</span><a class="btn btn-secondary btn-chico" href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas las órdenes</a></div>
+    {% endif %}
 
-<p>
-    <button type="button" class="btn btn-primary" data-abrir-orden>Crear OT</button>
-</p>
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Órdenes</h2><p>{{ ordenes|length }} registros.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° OT</th>
+                        <th>Equipo</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Programada</th>
+                        <th>Ejecución</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in ordenes %}
+                    <tr>
+                        <td><a class="codigo" href="{% url 'mantencion:detalle_orden' orden.id %}">{{ orden.numero_ot }}</a></td>
+                        <td>{{ orden.equipo.codigo }}</td>
+                        <td>{{ orden.get_tipo_display }}</td>
+                        <td>
+                            {% if orden.estado == 'CERRADA' %}
+                                <span class="badge badge-ok">{{ orden.get_estado_display }}</span>
+                            {% elif orden.estado == 'EN_CURSO' %}
+                                <span class="badge badge-warn">{{ orden.get_estado_display }}</span>
+                            {% else %}
+                                <span class="badge badge-neutral">{{ orden.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ orden.fecha_programada|default:"—" }}</td>
+                        <td>{{ orden.fecha_ejecucion|default:"—" }}</td>
+                        <td>
+                            {% if orden.estado == 'PROGRAMADA' %}
+                            <div class="celda-acciones">
+                                <form method="post" action="{% url 'mantencion:iniciar_orden' orden.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-naranja">Iniciar</button>
+                                </form>
+                                <a class="btn btn-secondary btn-chico" href="{% url 'mantencion:editar_orden' orden.id %}">Editar</a>
+                                <button type="button" class="btn btn-danger" data-borrar="{% url 'mantencion:borrar_orden' orden.id %}">Borrar</button>
+                            </div>
+                            {% elif orden.estado == 'EN_CURSO' %}
+                            <div class="celda-acciones">
+                                <a class="btn btn-naranja" href="{% url 'mantencion:detalle_orden' orden.id %}?cerrar=1">Cerrar</a>
+                                <a class="btn btn-secondary btn-chico" href="{% url 'mantencion:editar_orden' orden.id %}">Editar</a>
+                                <button type="button" class="btn btn-danger" data-borrar="{% url 'mantencion:borrar_orden' orden.id %}">Borrar</button>
+                            </div>
+                            {% else %}
+                            —
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="vacio">No hay órdenes de trabajo registradas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
-<table>
-    <thead>
-        <tr>
-            <th>N° OT</th>
-            <th>Equipo</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th>Programada</th>
-            <th>Ejecución</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for orden in ordenes %}
-        <tr>
-            <td><a href="{% url 'mantencion:detalle_orden' orden.id %}">{{ orden.numero_ot }}</a></td>
-            <td>{{ orden.equipo.codigo }}</td>
-            <td>{{ orden.get_tipo_display }}</td>
-            <td>
-                {% if orden.estado == 'CERRADA' %}
-                    <span class="badge badge-ok">{{ orden.get_estado_display }}</span>
-                {% elif orden.estado == 'EN_CURSO' %}
-                    <span class="badge badge-warn">{{ orden.get_estado_display }}</span>
-                {% else %}
-                    <span class="badge badge-neutral">{{ orden.get_estado_display }}</span>
-                {% endif %}
-            </td>
-            <td>{{ orden.fecha_programada|default:"—" }}</td>
-            <td>{{ orden.fecha_ejecucion|default:"—" }}</td>
-            <td>
-                {% if orden.estado == 'PROGRAMADA' %}
-                <div class="celda-acciones">
-                    <form method="post" action="{% url 'mantencion:iniciar_orden' orden.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-naranja">Iniciar</button>
-                    </form>
-                    <a class="btn btn-secondary" href="{% url 'mantencion:editar_orden' orden.id %}">Editar</a>
-                    <button type="button" class="btn btn-danger"
-                            data-borrar="{% url 'mantencion:borrar_orden' orden.id %}">Borrar</button>
-                </div>
-                {% elif orden.estado == 'EN_CURSO' %}
-                <div class="celda-acciones">
-                    <a class="btn btn-danger" href="{% url 'mantencion:detalle_orden' orden.id %}?cerrar=1">Cerrar</a>
-                    <a class="btn btn-secondary" href="{% url 'mantencion:editar_orden' orden.id %}">Editar</a>
-                    <button type="button" class="btn btn-danger"
-                            data-borrar="{% url 'mantencion:borrar_orden' orden.id %}">Borrar</button>
-                </div>
-                {% else %}
-                —
-                {% endif %}
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7">No hay órdenes de trabajo registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<dialog id="dialogo-crear-orden" class="dialogo-confirmacion"
-        {% if abrir_orden %}data-abrir-al-cargar="si"{% endif %}>
+<dialog id="dialogo-crear-orden" class="dialogo-confirmacion" {% if abrir_orden %}data-abrir-al-cargar="si"{% endif %}>
     <p class="dialogo-contexto">Programar una mantención preventiva o correctiva.</p>
-    <form method="post" class="form" id="formulario-crear-orden"
-          action="{% url 'mantencion:crear_orden' %}">
+    <form method="post" class="form" id="formulario-crear-orden" action="{% url 'mantencion:crear_orden' %}">
         {% csrf_token %}
         {{ form_orden.as_p }}
         <div class="dialogo-acciones">
-            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
-            <button type="submit" class="btn btn-si">Sí, crear</button>
+            <button type="button" class="btn btn-secondary" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-primary">Sí, crear</button>
         </div>
     </form>
 </dialog>
@@ -92,21 +99,18 @@
 <dialog id="dialogo-borrar" class="dialogo-confirmacion">
     <p>¿Borrar esta orden de trabajo?</p>
     <div class="dialogo-acciones">
-        <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
-        <button type="button" class="btn btn-si" id="boton-borrar-seguir">Sí</button>
+        <button type="button" class="btn btn-secondary" data-cerrar-dialogo>No</button>
+        <button type="button" class="btn btn-primary" id="boton-borrar-seguir">Sí</button>
     </div>
 </dialog>
 
 <dialog id="dialogo-borrar-confirmar" class="dialogo-confirmacion">
-    <p>
-        Se borra del registro y no se puede deshacer. Si la orden ya tenía insumos
-        cargados, se van con ella.
-    </p>
+    <p>Se borra del registro y no se puede deshacer. Si la orden ya tenía insumos cargados, se van con ella.</p>
     <form method="post" id="formulario-borrar">
         {% csrf_token %}
         <div class="dialogo-acciones">
-            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
-            <button type="submit" class="btn btn-si">Sí, borrar</button>
+            <button type="button" class="btn btn-secondary" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-primary">Sí, borrar</button>
         </div>
     </form>
 </dialog>

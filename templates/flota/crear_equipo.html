@@ -3,24 +3,39 @@
 {% block title %}Crear equipo — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Crear equipo</h1>
-<p class="page-subtitle">Agregar una máquina al inventario de la flota.</p>
-
-<form method="post" class="form form-card" id="equipo-form">
-    {% csrf_token %}
-    {% for field in form %}
-    <p{% if field.name == 'codigo' %} id="codigo-manual"{% endif %}>
-        {{ field.label_tag }}
-        {{ field }}
-        {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
-        {{ field.errors }}
-    </p>
-    {% endfor %}
-    <div class="form-actions">
-        <button type="submit" class="btn btn-primary">Crear equipo</button>
-        <a class="btn btn-secondary" href="{% url 'flota:equipos' %}">Cancelar</a>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Flota</span>
+                <h1>Crear equipo</h1>
+                <p class="sub">Agregar una máquina al inventario de la flota.</p>
+            </div>
+        </div>
     </div>
-</form>
+</section>
+
+<div class="container">
+    <section class="panel">
+        <div class="panel-cuerpo" style="padding:24px">
+            <form method="post" class="form form-card" id="equipo-form">
+                {% csrf_token %}
+                {% for field in form %}
+                <p{% if field.name == 'codigo' %} id="codigo-manual"{% endif %}>
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+                    {{ field.errors }}
+                </p>
+                {% endfor %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Crear equipo</button>
+                    <a class="btn btn-secondary" href="{% url 'flota:equipos' %}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
 
 <script>
     (function () {

@@ -3,13 +3,28 @@
 {% block title %}Editar {{ orden.numero_ot }} — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Editar {{ orden.numero_ot }}</h1>
-<p class="page-subtitle">Corregir una orden antes de cerrarla. Una vez cerrada no se puede tocar.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Mantención</span>
+                <h1>Editar {{ orden.numero_ot }}</h1>
+                <p class="sub">Corregir una orden antes de cerrarla.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<form method="post" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a class="btn btn-secondary" href="{% url 'mantencion:detalle_orden' orden.id %}">Cancelar</a>
-</form>
+<div class="container">
+    <section class="panel">
+        <div class="panel-cuerpo" style="padding:24px">
+            <form method="post" class="form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a class="btn btn-secondary" href="{% url 'mantencion:detalle_orden' orden.id %}">Cancelar</a>
+            </form>
+        </div>
+    </section>
+</div>
 {% endblock %}

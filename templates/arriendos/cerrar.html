@@ -3,13 +3,28 @@
 {% block title %}Cerrar arriendo — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Cerrar arriendo</h1>
-<p class="page-subtitle">{{ arriendo.equipo.codigo }} — {{ arriendo.cliente.razon_social }}</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Arriendos</span>
+                <h1>Cerrar arriendo</h1>
+                <p class="sub">{{ arriendo.equipo.codigo }} — {{ arriendo.cliente.razon_social }}</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<form method="post" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Cerrar</button>
-    <a class="btn btn-secondary" href="{% url 'arriendos:arriendos' %}">Cancelar</a>
-</form>
+<div class="container">
+    <section class="panel">
+        <div class="panel-cuerpo" style="padding:24px">
+            <form method="post" class="form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Cerrar</button>
+                <a class="btn btn-secondary" href="{% url 'arriendos:arriendos' %}">Cancelar</a>
+            </form>
+        </div>
+    </section>
+</div>
 {% endblock %}

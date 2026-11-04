@@ -4,64 +4,77 @@
 {% block title %}Equipos — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Equipos</h1>
-<p class="page-subtitle">{% if estado_filtrado %}Mostrando: {{ etiqueta_estado_filtrado }}.{% else %}Inventario completo de la flota.{% endif %}</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Flota</span>
+                <h1>Equipos</h1>
+                <p class="sub">{% if estado_filtrado %}Mostrando: {{ etiqueta_estado_filtrado }}.{% else %}Inventario completo de la flota.{% endif %}</p>
+            </div>
+            <div class="herramientas"><a class="btn btn-primary" href="{% url 'flota:crear_equipo' %}">Crear equipo</a></div>
+        </div>
+    </div>
+</section>
 
-{% if estado_filtrado %}
-<div class="active-filter"><span>Filtro activo: {{ etiqueta_estado_filtrado }}</span><a href="{% url 'flota:equipos' %}">Ver toda la flota</a></div>
-{% endif %}
+<div class="container">
+    {% if estado_filtrado %}
+    <div class="seccion-titulo"><h2>Filtro activo</h2><span class="nota">{{ etiqueta_estado_filtrado }}</span><a class="btn btn-secondary btn-chico" href="{% url 'flota:equipos' %}">Ver toda la flota</a></div>
+    {% endif %}
 
-<p>
-    <a class="btn btn-primary" href="{% url 'flota:crear_equipo' %}">Crear equipo</a>
-</p>
-
-<table>
-    <thead>
-        <tr>
-            <th>Código</th>
-            <th>Tipo</th>
-            <th>Patente</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Estado</th>
-            <th>Horómetro</th>
-            <th>Acción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for equipo in equipos %}
-        <tr>
-            <td><a href="{% url 'flota:detalle_equipo' equipo.id %}">{{ equipo.codigo }}</a></td>
-            <td>{{ equipo.tipo_equipo.nombre }}</td>
-            <td>{{ equipo.patente|default:"—" }}</td>
-            <td>{{ equipo.marca|default:"—" }}</td>
-            <td>{{ equipo.modelo|default:"—" }}</td>
-            <td>
-                {% if equipo.estado == 'DISPONIBLE' %}
-                    <span class="badge badge-ok">{{ equipo.get_estado_display }}</span>
-                {% elif equipo.estado == 'EN_FAENA' %}
-                    <span class="badge badge-warn">{{ equipo.get_estado_display }}</span>
-                {% elif equipo.estado == 'EN_MANTENIMIENTO' %}
-                    <span class="badge badge-alerta">{{ equipo.get_estado_display }}</span>
-                {% else %}
-                    <span class="badge badge-neutral">{{ equipo.get_estado_display }}</span>
-                {% endif %}
-            </td>
-            <td>{{ equipo.horometro_actual }}</td>
-            <td>
-                <button type="button" class="btn btn-secondary"
-                        data-cambiar-estado="{% url 'flota:cambiar_estado' equipo.id %}"
-                        data-equipo="{{ equipo.codigo }}"
-                        data-estado="{{ equipo.estado }}">Cambiar estado</button>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="8">No hay equipos registrados.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Inventario</h2><p>{{ equipos|length }} equipos.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Tipo</th>
+                        <th>Patente</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Estado</th>
+                        <th>Horómetro</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipo in equipos %}
+                    <tr>
+                        <td><a class="codigo" href="{% url 'flota:detalle_equipo' equipo.id %}">{{ equipo.codigo }}</a></td>
+                        <td>{{ equipo.tipo_equipo.nombre }}</td>
+                        <td>{{ equipo.patente|default:"—" }}</td>
+                        <td>{{ equipo.marca|default:"—" }}</td>
+                        <td>{{ equipo.modelo|default:"—" }}</td>
+                        <td>
+                            {% if equipo.estado == 'DISPONIBLE' %}
+                                <span class="badge badge-ok">{{ equipo.get_estado_display }}</span>
+                            {% elif equipo.estado == 'EN_FAENA' %}
+                                <span class="badge badge-azul">{{ equipo.get_estado_display }}</span>
+                            {% elif equipo.estado == 'EN_MANTENIMIENTO' %}
+                                <span class="badge badge-alerta">{{ equipo.get_estado_display }}</span>
+                            {% else %}
+                                <span class="badge badge-neutral">{{ equipo.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="horas">{{ equipo.horometro_actual }}</td>
+                        <td>
+                            <button type="button" class="btn btn-secondary btn-chico"
+                                    data-cambiar-estado="{% url 'flota:cambiar_estado' equipo.id %}"
+                                    data-equipo="{{ equipo.codigo }}"
+                                    data-estado="{{ equipo.estado }}">Cambiar estado</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="vacio">No hay equipos registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
 <dialog id="dialogo-estado" class="dialogo-confirmacion">
     <p class="dialogo-contexto">
@@ -78,8 +91,8 @@
             </select>
         </p>
         <div class="dialogo-acciones">
-            <button type="button" class="btn btn-danger" data-cerrar-dialogo>No</button>
-            <button type="submit" class="btn btn-si">Sí, cambiar</button>
+            <button type="button" class="btn btn-secondary" data-cerrar-dialogo>No</button>
+            <button type="submit" class="btn btn-primary">Sí, cambiar</button>
         </div>
     </form>
 </dialog>

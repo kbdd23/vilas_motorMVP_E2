@@ -3,30 +3,40 @@
 {% block title %}Usuarios — Vilas Motor{% endblock %}
 
 {% block content %}
-<div class="page-heading">
-    <div>
-        <h1>Usuarios</h1>
-        <p class="page-subtitle">Cuentas con acceso por correo electrónico.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Administración</span>
+                <h1>Usuarios</h1>
+                <p class="sub">Cuentas con acceso por correo electrónico.</p>
+            </div>
+            <div class="herramientas"><a class="btn btn-primary" href="{% url 'cuentas:crear_usuario' %}">Agregar usuario</a></div>
+        </div>
     </div>
-    <a class="btn btn-primary" href="{% url 'cuentas:crear_usuario' %}">+ Agregar usuario</a>
-</div>
+</section>
 
-<div class="table-card">
-    <table>
-        <thead>
-            <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Cliente</th><th>Estado</th></tr>
-        </thead>
-        <tbody>
-            {% for usuario in usuarios %}
-            <tr>
-                <td>{{ usuario.nombre }}</td><td>{{ usuario.email }}</td><td>{{ usuario.rol.nombre }}</td>
-                <td>{{ usuario.cliente|default:"—" }}</td>
-                <td>{% if usuario.is_active %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-neutral">Inactivo</span>{% endif %}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5">Aún no hay usuarios registrados.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container">
+    <section class="panel">
+        <div class="panel-encabezado"><div><h2>Cuentas</h2><p>{{ usuarios|length }} usuarios.</p></div></div>
+        <div class="panel-cuerpo">
+            <table>
+                <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Cliente</th><th>Estado</th></tr></thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>{{ usuario.rol.nombre }}</td>
+                        <td>{{ usuario.cliente|default:"—" }}</td>
+                        <td>{% if usuario.is_active %}<span class="badge badge-ok">Activo</span>{% else %}<span class="badge badge-neutral">Inactivo</span>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="vacio">Aún no hay usuarios registrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
 {% endblock %}

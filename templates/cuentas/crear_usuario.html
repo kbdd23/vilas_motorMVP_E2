@@ -3,18 +3,30 @@
 {% block title %}Agregar usuario — Vilas Motor{% endblock %}
 
 {% block content %}
-<div class="form-page">
-    <div>
-        <h1>Agregar usuario</h1>
-        <p class="page-subtitle">La persona podrá ingresar usando este correo y la contraseña definida.</p>
-    </div>
-    <form method="post" class="form form-card">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Crear usuario</button>
-            <a class="btn btn-secondary" href="{% url 'cuentas:usuarios' %}">Cancelar</a>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Administración</span>
+                <h1>Agregar usuario</h1>
+                <p class="sub">La persona podrá ingresar usando este correo y la contraseña definida.</p>
+            </div>
         </div>
-    </form>
+    </div>
+</section>
+
+<div class="container">
+    <section class="panel">
+        <div class="panel-cuerpo" style="padding:24px">
+            <form method="post" class="form form-card">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Crear usuario</button>
+                    <a class="btn btn-secondary" href="{% url 'cuentas:usuarios' %}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </section>
 </div>
 {% endblock %}

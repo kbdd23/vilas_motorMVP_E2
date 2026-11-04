@@ -3,13 +3,28 @@
 {% block title %}Crear tipo de equipo — Vilas Motor{% endblock %}
 
 {% block content %}
-<h1>Crear tipo de equipo</h1>
-<p class="page-subtitle">Agregar una categoría de flota y su unidad de medida.</p>
+<section class="page-hero">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Catálogos</span>
+                <h1>Crear tipo de equipo</h1>
+                <p class="sub">Agregar una categoría de flota y su unidad de medida.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-<form method="post" class="form">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Crear</button>
-    <a class="btn btn-secondary" href="{% url 'flota:tipos_equipo' %}">Cancelar</a>
-</form>
+<div class="container">
+    <section class="panel">
+        <div class="panel-cuerpo" style="padding:24px">
+            <form method="post" class="form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Crear</button>
+                <a class="btn btn-secondary" href="{% url 'flota:tipos_equipo' %}">Cancelar</a>
+            </form>
+        </div>
+    </section>
+</div>
 {% endblock %}

@@ -1,30 +1,123 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard — Vilas Motor{% endblock %}
 {% block content %}
-<section class="mock-heading"><div><h1>Dashboard</h1><p>Resumen de la flota y tareas pendientes.</p></div><div><a class="btn btn-secondary" href="{% url 'flota:equipos' %}">▣ Ver flota</a><a class="btn btn-primary" href="{% url 'mantencion:crear_orden' %}">＋ Crear OT</a></div></section>
-
-<section class="mock-kpis">
-    <a href="{% url 'flota:equipos' %}" class="mock-kpi"><span class="mock-icon icon-slate">▣</span><span><small>Equipos totales</small><strong>{{ total_equipos }}</strong><em>Ver flota →</em></span></a>
-    <a href="{% url 'flota:equipos' %}?estado=DISPONIBLE" class="mock-kpi"><span class="mock-icon icon-green">◉</span><span><small>Disponibles</small><strong>{{ equipos_disponibles }}</strong><em>{{ porcentaje_disponibles }}%</em></span></a>
-    <a href="{% url 'flota:equipos' %}?estado=EN_MANTENIMIENTO" class="mock-kpi"><span class="mock-icon icon-orange">⚒</span><span><small>En mantenimiento</small><strong>{% for item in estados_flotas %}{% if item.nombre == 'En mantenimiento' %}{{ item.cantidad }}{% endif %}{% endfor %}</strong><em>Ver estado</em></span></a>
-    <a href="{% url 'cuentas:mantenimientos_vencidos' %}" class="mock-kpi"><span class="mock-icon icon-red">!</span><span><small>Vencidos</small><strong>{{ servicios_vencidos }}</strong><em>{{ servicios_por_vencer }} próximos</em></span></a>
-    <a href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS" class="mock-kpi"><span class="mock-icon icon-blue">▤</span><span><small>Órdenes abiertas</small><strong>{{ ots_abiertas }}</strong><em>de {{ total_ot }} totales</em></span></a>
+<section class="page-hero con-kpis">
+    <div class="container">
+        <div class="hero-top">
+            <div>
+                <span class="eyebrow">Panel del planificador</span>
+                <h1>Dashboard</h1>
+                <p class="sub">Toca cualquier número para ver la lista completa que lo forma.</p>
+            </div>
+            <div class="fecha">Hoy · <b>{% now "d/m/Y" %}</b></div>
+        </div>
+        <div class="stat-grid">
+            <a class="stat-card" href="{% url 'flota:equipos' %}">
+                <span class="stat-label">Equipos totales</span>
+                <span class="stat-number">{{ total_equipos }}</span>
+                <span class="stat-extra">Ver flota →</span>
+            </a>
+            <a class="stat-card" href="{% url 'flota:equipos' %}?estado=DISPONIBLE">
+                <span class="stat-label">Disponibles</span>
+                <span class="stat-number">{{ equipos_disponibles }}</span>
+                <span class="stat-extra"><b>{{ porcentaje_disponibles }}%</b> de la flota</span>
+            </a>
+            <a class="stat-card" href="{% url 'flota:equipos' %}?estado=EN_MANTENIMIENTO">
+                <span class="stat-label">En mantenimiento</span>
+                <span class="stat-number">{% for item in estados_flotas %}{% if item.nombre == 'En mantenimiento' %}{{ item.cantidad }}{% endif %}{% endfor %}</span>
+                <span class="stat-extra">Ver estado →</span>
+            </a>
+            <a class="stat-card" href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS">
+                <span class="stat-label">Órdenes abiertas</span>
+                <span class="stat-number">{{ ots_abiertas }}</span>
+                <span class="stat-extra">de {{ total_ot }} totales</span>
+            </a>
+        </div>
+    </div>
 </section>
 
-<section class="mock-top-grid">
-    <article class="mock-card fleet-card"><h2>Estado de la flota</h2><div class="fleet-chart"><div class="donut" style="--donut: conic-gradient({{ flota_donut }});"><strong>{{ total_equipos }}</strong><span>equipos</span></div><div class="chart-legend">{% for item in estados_flotas %}<div><i class="bar-{{ item.tono }}"></i><span>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><small>{{ item.porcentaje }}%</small></div>{% endfor %}</div></div></article>
-    <article class="mock-card health-card"><h2>Salud de mantención</h2><div class="health-stack">{% for item in salud_mantencion %}<span class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></span>{% endfor %}</div><div class="health-legend">{% for item in salud_mantencion %}<div><i class="bar-{{ item.tono }}"></i><span>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><small>{{ item.porcentaje }}%</small></div>{% endfor %}</div></article>
-    <article class="mock-card urgent-card"><div class="urgent-heading"><h2>Tareas urgentes</h2><b>{{ servicios_vencidos|add:equipos_sin_devolver }}</b></div><a class="urgent-row urgent-danger" href="{% url 'cuentas:mantenimientos_vencidos' %}"><span>!</span>{{ servicios_vencidos }} mantenciones vencidas <i>›</i></a><a class="urgent-row" href="{% url 'cuentas:mantenimientos_por_vencer' %}"><span>◷</span>{{ servicios_por_vencer }} mantenciones por vencer <i>›</i></a><a class="urgent-row" href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS"><span>▤</span>{{ ots_abiertas }} órdenes abiertas <i>›</i></a><a class="urgent-row" href="{% url 'horometros:index' %}"><span>◌</span>{{ solicitudes_pendientes }} solicitudes de horómetros <i>›</i></a></article>
-</section>
+<div class="container">
+    <div class="dash-grid">
+        <div>
+            <div class="seccion-titulo"><h2>Qué hacer</h2><span class="nota">Tareas urgentes · <a href="{% url 'cuentas:mantenimientos_pendientes' %}">Ver todas →</a></span></div>
+            <div class="que-hacer">
+                <a class="que-hacer-card que-hacer-roja" href="{% url 'cuentas:mantenimientos_vencidos' %}">
+                    <span class="que-hacer-numero">{{ servicios_vencidos }}</span>
+                    <span class="que-hacer-titulo">Mantenciones vencidas</span>
+                    <span class="que-hacer-detalle">Servicios cuyo intervalo ya se cumplió.</span>
+                </a>
+                <a class="que-hacer-card que-hacer-ambar" href="{% url 'cuentas:mantenimientos_por_vencer' %}">
+                    <span class="que-hacer-numero">{{ servicios_por_vencer }}</span>
+                    <span class="que-hacer-titulo">Mantenciones por vencer</span>
+                    <span class="que-hacer-detalle">Dentro del umbral de aviso.</span>
+                </a>
+                <a class="que-hacer-card que-hacer-azul" href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS">
+                    <span class="que-hacer-numero">{{ ots_abiertas }}</span>
+                    <span class="que-hacer-titulo">Órdenes abiertas</span>
+                    <span class="que-hacer-detalle">Programadas o en curso.</span>
+                </a>
+                <a class="que-hacer-card que-hacer-neutra" href="{% url 'horometros:index' %}">
+                    <span class="que-hacer-numero">{{ solicitudes_pendientes }}</span>
+                    <span class="que-hacer-titulo">Pedir horómetros</span>
+                    <span class="que-hacer-detalle">Solicitudes que siguen pendientes.</span>
+                </a>
+            </div>
+        </div>
+        <div class="panel panel-mapa">
+            <div class="panel-encabezado">
+                <div><h2>Flota en vivo</h2><p>Toca una máquina del mapa para abrir su ficha.</p></div>
+                <div class="herramientas"><a class="btn btn-secondary btn-chico" href="{% url 'flota:equipos' %}">Ver toda la flota</a></div>
+            </div>
+            <div class="mapa" id="mapa-dash" style="height:400px"></div>
+        </div>
+    </div>
 
-<section class="mock-bottom-grid">
-    <article class="mock-card tasks-card"><div class="card-title-line"><h2>Próximas tareas</h2><a href="{% url 'cuentas:mantenimientos_pendientes' %}">Ver todas →</a></div><div class="task-tabs"><span class="active">Todas</span><span>Vencidas ({{ servicios_vencidos }})</span><span>Por vencer ({{ servicios_por_vencer }})</span><span>Órdenes ({{ ots_abiertas }})</span></div><div class="task-table">
-        <a href="{% url 'cuentas:mantenimientos_vencidos' %}"><i class="task-symbol danger">!</i><span><strong>Mantención vencida</strong><small>Servicios cuyo intervalo ya fue cumplido.</small></span><b>{{ servicios_vencidos }}</b><em>Ver</em></a>
-        <a href="{% url 'cuentas:mantenimientos_por_vencer' %}"><i class="task-symbol warning">◷</i><span><strong>Mantención por vencer</strong><small>Programa servicios dentro del umbral.</small></span><b>{{ servicios_por_vencer }}</b><em>Ver</em></a>
-        <a href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS"><i class="task-symbol blue">▤</i><span><strong>Órdenes abiertas</strong><small>Programadas o en curso.</small></span><b>{{ ots_abiertas }}</b><em>Ver</em></a>
-        <a href="{% url 'horometros:index' %}"><i class="task-symbol neutral">◌</i><span><strong>Pedir horómetros</strong><small>Solicitudes que siguen pendientes.</small></span><b>{{ solicitudes_pendientes }}</b><em>Ver</em></a>
-    </div></article>
-    <aside class="mock-side-column"><article class="mock-card compact-card"><div class="card-title-line"><h2>Equipos por estado</h2><a href="{% url 'flota:equipos' %}">Ver flota →</a></div>{% for item in estados_flotas %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article>
-    <article class="mock-card compact-card"><div class="card-title-line"><h2>Órdenes de trabajo</h2><a href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas →</a></div>{% for item in ordenes_por_estado %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article></aside>
-</section>
+    <div class="dash-grid">
+        <section class="panel">
+            <div class="panel-encabezado"><div><h2>Estado de la flota</h2><p>Distribución actual de los equipos.</p></div></div>
+            <div class="panel-cuerpo">
+                <table>
+                    <thead><tr><th>Estado</th><th>Equipos</th><th>Porcentaje</th></tr></thead>
+                    <tbody>
+                    {% for item in estados_flotas %}
+                    <tr><td><span class="senal {% if item.nombre == 'En mantenimiento' %}off{% elif item.nombre == 'Disponible' %}{% endif %}">{{ item.nombre }}</span></td><td class="horas">{{ item.cantidad }}</td><td>{{ item.porcentaje }}%</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section class="panel">
+            <div class="panel-encabezado"><div><h2>Salud de mantención</h2><p>Equipos según su próximo servicio.</p></div></div>
+            <div class="panel-cuerpo">
+                <table>
+                    <thead><tr><th>Estado</th><th>Equipos</th><th>Porcentaje</th></tr></thead>
+                    <tbody>
+                    {% for item in salud_mantencion %}
+                    <tr><td>{{ item.nombre }}</td><td class="horas">{{ item.cantidad }}</td><td>{{ item.porcentaje }}%</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var mapa = L.map('mapa-dash').setView([-20.2448, -70.1393], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(mapa);
+    fetch('/api/flota/')
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+            d.features.forEach(function (f) {
+                L.marker([f.geometry.coordinates[1], f.geometry.coordinates[0]])
+                    .addTo(mapa)
+                    .bindPopup('<strong>' + f.properties.codigo + '</strong><br>' + f.properties.tipo + ' · ' + f.properties.estado);
+            });
+        })
+        .catch(function () {});
+})();
+</script>
 {% endblock %}
