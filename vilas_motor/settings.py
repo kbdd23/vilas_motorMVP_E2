@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "horometros",
     "arriendos",
     "auditoria.apps.AuditoriaConfig",
+    "maqueta",
 ]
 
 AUTH_USER_MODEL = 'cuentas.Usuario'

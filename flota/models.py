@@ -48,6 +48,11 @@ class Equipo(models.Model):
     estado_previo = models.CharField(max_length=20, choices=Estado.choices, null=True, blank=True)
     horometro_actual = models.DecimalField(max_digits=10, decimal_places=1, default=Decimal('0.0'))
     telemetria_id = models.CharField(max_length=40, null=True, blank=True)
+    # Georreferencia para el mapa de flota (maqueta de Rodrigo). Latitud/longitud en
+    # grados decimales (WGS84); ubicacion guarda el nombre de la faena o taller.
+    latitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    ubicacion = models.CharField(max_length=80, null=True, blank=True)
 
     class Meta:
         db_table = 'equipo'

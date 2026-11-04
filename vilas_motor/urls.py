@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include('horometros.urls')),
     path('', include('arriendos.urls')),
     path('', include('mantencion.urls')),
+    path('', include('maqueta.urls')),
 ]
 
 # En desarrollo, Django sirve los archivos de media/ directamente.
