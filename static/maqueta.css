@@ -464,3 +464,33 @@ kbd { font-family: ui-monospace, Consolas, monospace; font-size: 12px; border: 1
 /* Permisos por rol: el técnico no ve lo que no puede hacer */
 .rol-TECNICO [data-crear], .rol-TECNICO [data-arrendar], .rol-TECNICO [data-terminar-arriendo],
 .rol-TECNICO select[data-cambiar-estado], .rol-TECNICO [data-reconectar] { display: none !important; }
+
+/* ===== Ajustes de integración con Django ===== */
+a { color: inherit; text-decoration: none; }
+a:hover { opacity: .85; }
+
+/* El hero y el header son oscuros: todo enlace adentro debe ser claro. */
+.page-hero a, .site-header a { color: var(--blanco); }
+.page-hero a:hover, .site-header a:hover { color: var(--blanco); opacity: .85; }
+.stat-card { color: var(--blanco); text-decoration: none; }
+.stat-card:hover { opacity: .9; }
+.site-footer { background: var(--negro); color: #a1a1aa; padding: 20px 0; }
+.hero-top .herramientas a { border-color: var(--negro-3); }
+
+/* ===== Modo oscuro (botón del header) ===== */
+[data-theme="dark"] {
+    --negro: #0b0b0c; --negro-2: #161618; --negro-3: #2a2a2e;
+    --gris-fondo: #111113; --blanco: #161618;
+    --texto: #e5e5e7; --texto-2: #c7c7cb; --muted: #8b8b93;
+    --linea: #2a2a2e; --linea-fuerte: #3a3a40;
+}
+[data-theme="dark"] body { background: var(--gris-fondo); color: var(--texto); }
+[data-theme="dark"] .panel { background: var(--blanco); border-color: var(--linea); }
+[data-theme="dark"] th { background: var(--negro-2); color: var(--muted); border-bottom-color: var(--negro); }
+[data-theme="dark"] td { border-bottom-color: var(--linea); color: var(--texto-2); }
+[data-theme="dark"] tbody tr.clic:hover { background: var(--negro-2); }
+[data-theme="dark"] h2, [data-theme="dark"] h3 { color: var(--texto); }
+[data-theme="dark"] .codigo { color: var(--texto); }
+[data-theme="dark"] .buscar, [data-theme="dark"] .filtro { background: var(--negro-2); color: var(--texto-2); border-color: var(--linea-fuerte); }
+[data-theme="dark"] .que-hacer-card { background: var(--blanco); color: var(--texto); }
+[data-theme="dark"] .que-hacer-detalle { color: var(--muted); }

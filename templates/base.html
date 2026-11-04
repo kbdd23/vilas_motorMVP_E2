@@ -29,6 +29,7 @@
             {% if user.is_staff %}<a href="{% url 'cuentas:usuarios' %}">Usuarios</a>{% endif %}
         </nav>
         <div class="header-right">
+            <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar tema" title="Cambiar tema">◐</button>
             {% if user.is_authenticated %}
             <span class="gps-estado"><span class="punto-vivo"></span>En línea</span>
             <span class="avatar">{{ user.nombre|slice:":1"|upper }}</span>
@@ -53,6 +54,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="{% static 'js/toasts.js' %}"></script>
 <script src="{% static 'js/sortable-tables.js' %}"></script>
+<script>
+(function () {
+    var root = document.documentElement;
+    if (localStorage.getItem('vilas-theme') === 'dark') root.setAttribute('data-theme', 'dark');
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+        var oscuro = root.getAttribute('data-theme') === 'dark';
+        if (oscuro) { root.removeAttribute('data-theme'); localStorage.setItem('vilas-theme', 'light'); }
+        else { root.setAttribute('data-theme', 'dark'); localStorage.setItem('vilas-theme', 'dark'); }
+    });
+})();
+</script>
 {% block extra_js %}{% endblock %}
 </body>
 </html>
