@@ -24,6 +24,7 @@
         <a href="{% url 'horometros:index' %}"><span>◷</span>Horómetros</a>
         <a href="{% url 'arriendos:arriendos' %}"><span>⌘</span>Arriendos</a>
         <a href="{% url 'cuentas:catalogos' %}"><span>▤</span>Catálogos</a>
+        <a href="{% url 'cuentas:manual' %}"><span>?</span>Manual de uso</a>
         {% if user.is_staff %}<a href="{% url 'cuentas:usuarios' %}"><span>♙</span>Usuarios</a>{% endif %}
     </nav>
     <form method="post" action="{% url 'cuentas:logout' %}" class="sidebar-logout">{% csrf_token %}<button type="submit"><span>◔</span>Cerrar sesión</button></form>

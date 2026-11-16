@@ -14,6 +14,7 @@ urlpatterns = [
     path('mantenciones-vencidas/', views.mantenimientos_vencidos, name='mantenimientos_vencidos'),
     path('mantenciones-por-vencer/', views.mantenimientos_por_vencer, name='mantenimientos_por_vencer'),
     path('catalogos/', views.catalogos, name='catalogos'),
+    path('manual/', views.manual, name='manual'),
     path('clientes/', views.lista_clientes, name='clientes'),
     path('clientes/nueva/', views.crear_cliente, name='crear_cliente'),
     path('usuarios/', views.lista_usuarios, name='usuarios'),

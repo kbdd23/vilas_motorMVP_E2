@@ -57,6 +57,11 @@ def catalogos(request):
     return render(request, 'cuentas/catalogos.html')
 
 
+def manual(request):
+    """Manual de uso: la guía que se consulta sin salir del panel."""
+    return render(request, 'cuentas/manual.html')
+
+
 def lista_clientes(request):
     """Cartera de clientes."""
     clientes = Cliente.objects.order_by('razon_social')

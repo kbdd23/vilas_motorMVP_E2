@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Manual de uso — Vilas Motor{% endblock %}
+
+{% block content %}
+<section class="manual-hero">
+    <p class="manual-etiqueta">Documentación</p>
+    <h1>Manual de uso</h1>
+    <p class="manual-bajada">Cómo se opera Vilas Motor de principio a fin: dar de alta un equipo, abrir una orden de trabajo, cerrarla con su horómetro y arrendar la máquina a un cliente.</p>
+    <p class="manual-meta">Sistema de gestión de mantenimiento · versión del panel actual</p>
+</section>
+
+<nav class="manual-indice" aria-label="Índice del manual">
+    <a href="#acceso">Acceso</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#buscador">Buscador</a>
+    <a href="#flota">Flota</a>
+    <a href="#ordenes">Órdenes de trabajo</a>
+    <a href="#mantencion">Mantención</a>
+    <a href="#horometros">Horómetros</a>
+    <a href="#arriendos">Arriendos</a>
+    <a href="#catalogos">Catálogos</a>
+    <a href="#usuarios">Usuarios</a>
+    <a href="#mapa">Flota en vivo</a>
+</nav>
+
+<section class="manual-seccion" id="acceso">
+    <h2>Acceso y cuenta</h2>
+    <p>El ingreso es con correo y contraseña. La primera vez la cuenta nace sin confirmar y el sistema no deja avanzar hasta validar el código de seis dígitos.</p>
+    <ol class="manual-pasos">
+        <li>Entra a la pantalla de inicio de sesión y escribe tu correo y contraseña.</li>
+        <li>Si es tu primer ingreso, revisa el correo: llega un código de seis dígitos.</li>
+        <li>Escribe el código en la pantalla de verificación. Si expiró, usa <em>reenviar código</em>.</li>
+        <li>La sesión dura ocho horas; después de eso hay que volver a entrar.</li>
+    </ol>
+    <p class="manual-nota">Si olvidaste la contraseña, usa el enlace de recuperación: el sistema envía un correo con un enlace válido por 24 horas.</p>
+</section>
+
+<section class="manual-seccion" id="dashboard">
+    <h2>Dashboard</h2>
+    <p>Es la vista de entrada y responde una sola pregunta: qué requiere atención hoy.</p>
+    <ul class="manual-lista">
+        <li><strong>Indicadores:</strong> equipos totales, disponibles, en mantenimiento y mantenciones vencidas.</li>
+        <li><strong>Tareas urgentes:</strong> mantenciones vencidas y por vencer, órdenes abiertas y solicitudes de horómetro pendientes.</li>
+        <li><strong>Equipos por estado y órdenes por estado:</strong> barras con la distribución actual.</li>
+        <li><strong>Flota en vivo:</strong> el mapa con la posición reportada de cada máquina.</li>
+    </ul>
+    <p>Cada tarjeta es un enlace: al tocarla se abre la bandeja ya filtrada.</p>
+</section>
+
+<section class="manual-seccion" id="buscador">
+    <h2>Buscador global</h2>
+    <p>Está en la barra superior y busca equipos, órdenes de trabajo y clientes al mismo tiempo. No distingue mayúsculas ni tildes: <em>grua</em> encuentra <em>Grúa</em>.</p>
+    <ol class="manual-pasos">
+        <li>Escribe al menos dos caracteres y espera un instante.</li>
+        <li>Baja con las flechas y abre con Enter, o haz clic en el resultado.</li>
+        <li>Pulsa Enter sin elegir para ver la página completa de resultados.</li>
+    </ol>
+    <p class="manual-nota">Escrito solo, <em>OT</em> despliega todas las órdenes ordenadas por actividad más reciente. Si agregas un número (<em>OT 118</em>) filtra por ese correlativo.</p>
+</section>
+
+<section class="manual-seccion" id="flota">
+    <h2>Flota</h2>
+    <p>El inventario físico: cada máquina con su código, patente, horómetro y estado.</p>
+    <ol class="manual-pasos">
+        <li>En <a href="{% url 'flota:equipos' %}">Flota</a>, usa <em>Nuevo equipo</em>. El código se arma solo con el prefijo del tipo y un correlativo.</li>
+        <li>Antes de crear equipos, revisa <a href="{% url 'flota:tipos_equipo' %}">Tipos de equipo</a>: definen la unidad de medida (horas o kilómetros).</li>
+        <li>En la ficha del equipo están sus datos, su historial de órdenes y el acceso para editar.</li>
+        <li>Para corregir el estado a mano, usa el desplegable <em>Cambiar estado</em> del listado.</li>
+    </ol>
+    <p class="manual-nota">Un equipo no vuelve a <em>Disponible</em> mientras tenga un arriendo vigente: primero se cierra el contrato.</p>
+</section>
+
+<section class="manual-seccion" id="ordenes">
+    <h2>Órdenes de trabajo</h2>
+    <p>La OT es el registro de la mantención. Nace programada, pasa a en curso y termina cerrada con su horómetro de cierre.</p>
+    <ol class="manual-pasos">
+        <li>Crea la orden en <a href="{% url 'mantencion:ordenes_trabajo' %}">Órdenes de trabajo</a>: equipo, tipo (preventiva o correctiva) y fecha programada.</li>
+        <li>Cuando el trabajo arranca, usa <em>Iniciar</em>. El equipo pasa a <em>En mantenimiento</em> y se recuerda de dónde venía.</li>
+        <li>Registra los insumos realmente usados desde la propia orden.</li>
+        <li>Al terminar, <em>Cerrar</em>: se pide el horómetro de cierre y el equipo vuelve a su estado anterior.</li>
+    </ol>
+    <p class="manual-nota">El número de OT es correlativo y único. No se edita a mano: es la referencia que se comparte con el cliente.</p>
+</section>
+
+<section class="manual-seccion" id="mantencion">
+    <h2>Mantención</h2>
+    <p>Los planes definen cada cuántas horas o kilómetros corresponde un servicio, y qué tareas incluye.</p>
+    <ol class="manual-pasos">
+        <li>Crea un <a href="{% url 'mantencion:planes' %}">plan</a> con su intervalo.</li>
+        <li>Agrega los servicios del plan, con su descripción y los insumos que consumen.</li>
+        <li>El sistema calcula el próximo servicio de cada equipo con su horómetro actual.</li>
+    </ol>
+    <p class="manual-nota">Con el pronóstico, los equipos se clasifican en vencido, por vencer y al día. Las dos primeras categorías alimentan las tareas urgentes del dashboard.</p>
+</section>
+
+<section class="manual-seccion" id="horometros">
+    <h2>Horómetros</h2>
+    <p>El horómetro es la base de todo cálculo de mantención. Se alimenta de lecturas, y las lecturas llegan por solicitud.</p>
+    <ol class="manual-pasos">
+        <li>En <a href="{% url 'horometros:index' %}">Horómetros</a>, crea una solicitud indicando el equipo y la fuente (operador, telemetría, taller).</li>
+        <li>Cuando llega el dato, registra la lectura sobre esa solicitud.</li>
+        <li>La lectura actualiza el horómetro del equipo y reinicia el pronóstico de mantención.</li>
+    </ol>
+    <p class="manual-nota">La solicitud puede mostrar el arrendatario del equipo: es a quien hay que pedirle el dato cuando la máquina está en faena.</p>
+</section>
+
+<section class="manual-seccion" id="arriendos">
+    <h2>Arriendos</h2>
+    <p>Un arriendo es un contrato con fecha de inicio y, opcionalmente, de término. La vigencia se deduce: está vigente mientras no tenga fecha de término.</p>
+    <ol class="manual-pasos">
+        <li>Crea el contrato en <a href="{% url 'arriendos:arriendos' %}">Arriendos</a> eligiendo equipo y cliente.</li>
+        <li>El equipo pasa automáticamente a <em>En faena</em>.</li>
+        <li>Cuando la máquina vuelve, cierra el arriendo con su fecha de término.</li>
+        <li>Después de cerrarlo, márcala como disponible desde la ficha o el listado de flota.</li>
+    </ol>
+</section>
+
+<section class="manual-seccion" id="catalogos">
+    <h2>Catálogos</h2>
+    <p>Los listados maestros que alimentan el resto del sistema, en un solo lugar: clientes, equipos, tipos de equipo, insumos y planes de mantención.</p>
+    <ul class="manual-lista">
+        <li><strong>Clientes:</strong> RUT, razón social y contacto. Se usan en arriendos y en la solicitud de horómetros.</li>
+        <li><strong>Insumos:</strong> repuestos y materiales que se descuentan al registrar consumo en una OT.</li>
+        <li><strong>Planes de mantención:</strong> la definición de los servicios preventivos.</li>
+    </ul>
+</section>
+
+<section class="manual-seccion" id="usuarios">
+    <h2>Usuarios</h2>
+    <p>Solo las cuentas con permisos de administración ven esta sección.</p>
+    <ol class="manual-pasos">
+        <li>Crea el usuario con nombre, correo y rol.</li>
+        <li>La cuenta queda pendiente hasta que la persona confirme el código enviado a su correo.</li>
+        <li>El rol define qué puede hacer dentro del sistema.</li>
+    </ol>
+</section>
+
+<section class="manual-seccion" id="mapa">
+    <h2>Flota en vivo</h2>
+    <p>Al final del dashboard, el mapa muestra las máquinas que han reportado posición.</p>
+    <ul class="manual-lista">
+        <li>Cada marcador se colorea según el estado: verde disponible, azul en faena, ámbar en mantenimiento, gris interno.</li>
+        <li>Al tocar un marcador se abre el resumen del equipo con el enlace a su ficha.</li>
+        <li>Los grupos con número agrupan equipos cercanos: al acercar el zoom se separan.</li>
+        <li>El panel se refresca solo cada 30 segundos y se pausa cuando la pestaña no está visible.</li>
+    </ul>
+    <p class="manual-nota">Mientras no haya telemetría conectada, las posiciones provienen de coordenadas de referencia. Un equipo sin coordenadas no aparece en el mapa y se informa al pie del panel.</p>
+</section>
+
+<section class="manual-seccion manual-cierre">
+    <h2>Ante un problema</h2>
+    <ul class="manual-lista">
+        <li><strong>No puedo entrar:</strong> revisa si la cuenta está confirmada; el sistema no deja operar sin el código validado.</li>
+        <li><strong>No encuentro un equipo:</strong> prueba con el código, la patente o la marca; el buscador cubre los tres.</li>
+        <li><strong>El mapa está vacío:</strong> significa que ningún equipo ha reportado posición todavía.</li>
+        <li><strong>Un dato no cuadra:</strong> el horómetro manda. Si está mal, corrige con una lectura nueva en lugar de editar el equipo.</li>
+    </ul>
+</section>
+{% endblock %}

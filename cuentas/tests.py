@@ -235,3 +235,35 @@ class SinDevolverPorEstadoTest(TestCase):
         self._con_arriendo_cerrado(Equipo.Estado.EN_FAENA)
         contexto = self.client.get(reverse('cuentas:dashboard')).context
         self.assertEqual(contexto['equipos_sin_devolver'], 1)
+
+
+class ManualDeUsoTest(TestCase):
+    """El manual es una página estática, pero sigue exigiendo sesión iniciada."""
+
+    def setUp(self):
+        self.rol, _ = Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(email='manual@vilas.cl', password='test1234', nombre='Manual')
+        self.usuario.email_verificado = True
+        self.usuario.save(update_fields=['email_verificado'])
+        self.client.force_login(self.usuario)
+
+    def test_el_manual_muestra_sus_secciones(self):
+        respuesta = self.client.get(reverse('cuentas:manual'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Manual de uso')
+        self.assertContains(respuesta, 'Flota en vivo')
+        self.assertContains(respuesta, 'Órdenes de trabajo')
+
+    def test_el_panel_enlaza_el_manual(self):
+        respuesta = self.client.get(reverse('cuentas:dashboard'))
+        self.assertContains(respuesta, reverse('cuentas:manual'))
+
+    def test_sin_sesion_manda_al_login(self):
+        self.client.logout()
+        respuesta = self.client.get(reverse('cuentas:manual'))
+
+        self.assertRedirects(
+            respuesta,
+            f"{reverse('cuentas:login')}?next={reverse('cuentas:manual')}",
+        )
