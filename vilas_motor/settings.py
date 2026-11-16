@@ -11,9 +11,19 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+# DEBUG apagado por defecto: nunca debe quedar encendido por olvido, porque
+# expone tracebacks y variables locales (incluidas credenciales) al visitante.
+# Para desarrollo local se enciende de forma explícita con DEBUG=True en el .env.
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [h for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h]
+
+# Vercel inyecta el dominio del despliegue en estas variables. Con DEBUG=False y
+# ALLOWED_HOSTS vacío, Django respondería DisallowedHost (400); agregarlas deja
+# el sitio servible sin depender de configurar el dominio a mano.
+for _host_vercel in (os.getenv('VERCEL_URL'), os.getenv('VERCEL_PROJECT_PRODUCTION_URL')):
+    if _host_vercel and _host_vercel not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host_vercel)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -192,6 +202,10 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
+    # Vercel termina el TLS en su borde y reenvía por HTTP interno, avisando el
+    # esquema original en la cabecera. Sin esto, SECURE_SSL_REDIRECT no reconoce
+    # la petición como segura y provoca un bucle de redirecciones.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
