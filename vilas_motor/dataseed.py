@@ -25,6 +25,7 @@ from arriendos.models import Arriendo
 from auditoria.models import Auditoria
 from cuentas.models import Cliente, Usuario
 from flota.models import Equipo, TipoEquipo
+from flota.ubicaciones import ubicacionDemo
 from horometros.models import LecturaHorometro, SolicitudHorometro
 from insumos.models import Insumo
 from mantencion.models import (
@@ -507,6 +508,12 @@ def _sembrar_equipos(tipos):
                 'horometro_actual': datos['horometro_actual'],
             },
         )
+        # El mapa de flota necesita coordenadas: los equipos de demostración
+        # nacen ubicados y los ya existentes se completan solo si están sin señal.
+        if equipo.latitud is None:
+            equipo.latitud, equipo.longitud = ubicacionDemo(datos['codigo'])
+            equipo.ultima_senal = timezone.now()
+            equipo.save(update_fields=['latitud', 'longitud', 'ultima_senal'])
         resultado[datos['codigo']] = equipo
     return resultado
 

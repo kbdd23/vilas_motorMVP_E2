@@ -272,3 +272,48 @@ class CambiarEstadoViewTest(TestCase):
     def test_el_inventario_ofrece_el_boton(self):
         response = self.client.get(reverse('flota:equipos'))
         self.assertContains(response, reverse('flota:cambiar_estado', args=[self.equipo.id]))
+
+
+class PosicionesFlotaTest(TestCase):
+    """El mapa en vivo solo recibe equipos que reportaron posición."""
+
+    def setUp(self):
+        self.rol, _ = Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador del sistema de gestión de mantenimiento'})
+        self.usuario = Usuario.objects.create_user(email='mapa@vilas.cl', password='test1234', nombre='Mapa')
+        self.client.force_login(self.usuario)
+        self.tipo = TipoEquipo.objects.create(
+            nombre='Grúa horquilla', unidad_medida=TipoEquipo.UnidadMedida.HORAS
+        )
+        self.ubicado = Equipo.objects.create(
+            tipo_equipo=self.tipo,
+            codigo='EQ-001',
+            latitud=Decimal('-20.220800'),
+            longitud=Decimal('-70.141400'),
+            ultima_senal=timezone.now(),
+        )
+        self.sin_senal = Equipo.objects.create(tipo_equipo=self.tipo, codigo='EQ-002')
+
+    def test_solo_devuelve_equipos_con_ubicacion(self):
+        respuesta = self.client.get(reverse('flota:posiciones'))
+        datos = respuesta.json()
+
+        self.assertEqual([posicion['codigo'] for posicion in datos['posiciones']], ['EQ-001'])
+        self.assertEqual(datos['total'], 1)
+        self.assertEqual(datos['sin_ubicacion'], 1)
+        self.assertAlmostEqual(datos['posiciones'][0]['lat'], -20.2208, places=4)
+        self.assertAlmostEqual(datos['posiciones'][0]['lng'], -70.1414, places=4)
+
+    def test_la_posicion_trae_el_enlace_a_la_ficha(self):
+        respuesta = self.client.get(reverse('flota:posiciones'))
+        posicion = respuesta.json()['posiciones'][0]
+
+        self.assertEqual(posicion['url'], reverse('flota:detalle_equipo', args=[self.ubicado.id]))
+        self.assertEqual(posicion['estado'], Equipo.Estado.DISPONIBLE)
+
+    def test_sin_coordenadas_el_mapa_recibe_lista_vacia(self):
+        Equipo.objects.filter(pk=self.ubicado.pk).update(latitud=None, longitud=None)
+        datos = self.client.get(reverse('flota:posiciones')).json()
+
+        self.assertEqual(datos['posiciones'], [])
+        self.assertEqual(datos['total'], 0)
+        self.assertEqual(datos['sin_ubicacion'], 2)

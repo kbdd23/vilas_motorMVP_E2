@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Dashboard — Vilas Motor{% endblock %}
 {% block content %}
 <section class="mock-heading"><div><h1>Dashboard</h1><p>Resumen de la flota y tareas pendientes.</p></div><div><a class="btn btn-secondary" href="{% url 'flota:equipos' %}">▣ Ver flota</a><a class="btn btn-primary" href="{% url 'mantencion:crear_orden' %}">＋ Crear OT</a></div></section>
@@ -27,4 +28,24 @@
     <aside class="mock-side-column"><article class="mock-card compact-card"><div class="card-title-line"><h2>Equipos por estado</h2><a href="{% url 'flota:equipos' %}">Ver flota →</a></div>{% for item in estados_flotas %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article>
     <article class="mock-card compact-card"><div class="card-title-line"><h2>Órdenes de trabajo</h2><a href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas →</a></div>{% for item in ordenes_por_estado %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article></aside>
 </section>
+
+<section class="mapa-flota-seccion">
+    <article class="mock-card mapa-card">
+        <div class="card-title-line"><h2>Flota en vivo</h2><a href="{% url 'flota:equipos' %}">Ver toda la flota →</a></div>
+        <p class="mapa-subtitulo">Toca una máquina del mapa para abrir su ficha.</p>
+        <div id="mapa-flota" class="mapa-flota" data-endpoint="{% url 'flota:posiciones' %}" role="application" aria-label="Mapa de la flota en vivo"></div>
+        <p class="mapa-aviso" id="mapa-flota-aviso" aria-live="polite" hidden></p>
+    </article>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="{% static 'js/mapa-flota.js' %}"></script>
 {% endblock %}

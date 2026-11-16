@@ -7,6 +7,7 @@ app_name = 'flota'
 urlpatterns = [
     path('equipos/', views.lista_equipos, name='equipos'),
     path('equipos/nueva/', views.crear_equipo, name='crear_equipo'),
+    path('equipos/posiciones/', views.posiciones_flota, name='posiciones'),
     path('equipos/<int:pk>/', views.detalle_equipo, name='detalle_equipo'),
     path('equipos/<int:pk>/editar/', views.editar_equipo, name='editar_equipo'),
     path('equipos/<int:pk>/disponible/', views.marcar_disponible, name='marcar_disponible'),

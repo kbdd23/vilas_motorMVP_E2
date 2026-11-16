@@ -48,6 +48,11 @@ class Equipo(models.Model):
     estado_previo = models.CharField(max_length=20, choices=Estado.choices, null=True, blank=True)
     horometro_actual = models.DecimalField(max_digits=10, decimal_places=1, default=Decimal('0.0'))
     telemetria_id = models.CharField(max_length=40, null=True, blank=True)
+    # Posición reportada por la telemetría. Mientras esté nula el equipo no se
+    # dibuja en el mapa de flota: no se inventa una ubicación que no consta.
+    latitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitud = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    ultima_senal = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'equipo'

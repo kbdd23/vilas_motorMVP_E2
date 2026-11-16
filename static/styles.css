@@ -1650,3 +1650,129 @@ th[aria-sort="descending"] .sort-button::after {
     border: 1px solid var(--linea-taller, #dedede);
     color: var(--muted-taller, #71717a);
 }
+
+/* ===== Flota en vivo: panel del mapa ===== */
+.mapa-flota-seccion {
+    margin-top: 17px;
+}
+
+.mapa-card {
+    padding: 18px;
+}
+
+.mapa-subtitulo {
+    margin: 6px 0 14px;
+    color: var(--muted-taller, #71717a);
+    font-size: 13px;
+}
+
+.mapa-flota {
+    height: 440px;
+    border: 1px solid #36363a;
+    background: #0e0e10;
+}
+
+.mapa-aviso {
+    margin-top: 10px;
+    color: var(--muted-taller, #71717a);
+    font-size: 12px;
+}
+
+.marcador-equipo,
+.marcador-grupo {
+    border: 0;
+    background: transparent;
+}
+
+.marcador-punto {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #0b0b0c;
+    transform: rotate(45deg);
+}
+
+.marcador-punto[data-tono="verde"] {
+    background: #157f3b;
+}
+
+.marcador-punto[data-tono="azul"] {
+    background: #1f4fd1;
+}
+
+.marcador-punto[data-tono="ambar"] {
+    background: #d98a00;
+}
+
+.marcador-punto[data-tono="gris"] {
+    background: #888891;
+}
+
+.marcador-grupo span {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 2px solid #fff;
+    background: var(--rojo-taller, #e10600);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.mapa-flota .leaflet-container {
+    font-family: 'Barlow', system-ui, sans-serif;
+}
+
+.mapa-flota .leaflet-popup-content-wrapper {
+    border-radius: 0;
+}
+
+.mapa-popup-codigo {
+    display: block;
+    color: #18181b;
+    font-size: 14px;
+}
+
+.mapa-flota .leaflet-popup-content span {
+    display: block;
+    margin-top: 2px;
+    color: #52525b;
+    font-size: 12px;
+}
+
+.mapa-popup-estado {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.mapa-popup-estado[data-tono="verde"] {
+    color: #157f3b;
+}
+
+.mapa-popup-estado[data-tono="azul"] {
+    color: #1f4fd1;
+}
+
+.mapa-popup-estado[data-tono="ambar"] {
+    color: #a15c00;
+}
+
+.mapa-popup-estado[data-tono="gris"] {
+    color: #52525b;
+}
+
+.mapa-flota .leaflet-popup-content a {
+    display: block;
+    margin-top: 8px;
+    color: var(--rojo-taller, #e10600);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}

@@ -1,5 +1,8 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from arriendos.models import Arriendo
@@ -123,3 +126,39 @@ def cambiar_estado(request, pk):
     except ValueError:
         pass  # estado inválido: se ignora y la lista queda igual
     return redirect('flota:equipos')
+
+
+@login_required
+def posiciones_flota(request):
+    """Posiciones para el mapa de flota en vivo del dashboard.
+
+    Solo viajan los equipos con coordenadas; el resto se cuenta aparte para que
+    el panel pueda decir cuántos faltan en vez de mostrar un mapa vacío sin
+    explicación.
+    """
+    equipos = Equipo.objects.select_related('tipo_equipo')
+    con_ubicacion = equipos.exclude(latitud__isnull=True).exclude(longitud__isnull=True)
+
+    posiciones = []
+    for equipo in con_ubicacion.order_by('codigo'):
+        posiciones.append({
+            'codigo': equipo.codigo,
+            'lat': float(equipo.latitud),
+            'lng': float(equipo.longitud),
+            'estado': equipo.estado,
+            'estado_etiqueta': equipo.get_estado_display(),
+            'detalle': ' · '.join(
+                parte
+                for parte in (equipo.tipo_equipo.nombre, equipo.marca, equipo.modelo)
+                if parte
+            ),
+            'senal': equipo.ultima_senal.isoformat() if equipo.ultima_senal else None,
+            'url': reverse('flota:detalle_equipo', args=[equipo.id]),
+        })
+
+    return JsonResponse({
+        'posiciones': posiciones,
+        'total': len(posiciones),
+        'sin_ubicacion': equipos.count() - len(posiciones),
+        'generado': timezone.now().isoformat(),
+    })
