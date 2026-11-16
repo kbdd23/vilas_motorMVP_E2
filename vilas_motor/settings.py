@@ -84,6 +84,18 @@ if os.getenv('DB_ENGINE', 'mysql').lower() == 'sqlite':
         }
     }
 else:
+    # Opciones comunes del conector MySQL (PyMySQL mediante install_as_MySQLdb).
+    opciones_mysql = {
+        'charset': 'utf8mb4',
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    }
+
+    # Railway y otros proveedores exigen TLS cuando se conecta por su endpoint
+    # público (proxy TCP). Se activa explícitamente con DB_SSL=True para no
+    # romper conexiones internas que no usan cifrado.
+    if os.getenv('DB_SSL', 'False') == 'True':
+        opciones_mysql['ssl'] = {'verify_mode': False}
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -92,10 +104,7 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '3306'),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
+            'OPTIONS': opciones_mysql,
         }
     }
 
