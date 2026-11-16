@@ -147,6 +147,11 @@ def posiciones_flota(request):
             'lng': float(equipo.longitud),
             'estado': equipo.estado,
             'estado_etiqueta': equipo.get_estado_display(),
+            'tipo': equipo.tipo_equipo.nombre,
+            'marca': equipo.marca or '',
+            'modelo': equipo.modelo or '',
+            'patente': equipo.patente or '',
+            'horometro': str(equipo.horometro_actual),
             'detalle': ' · '.join(
                 parte
                 for parte in (equipo.tipo_equipo.nombre, equipo.marca, equipo.modelo)

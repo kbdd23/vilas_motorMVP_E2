@@ -310,6 +310,16 @@ class PosicionesFlotaTest(TestCase):
         self.assertEqual(posicion['url'], reverse('flota:detalle_equipo', args=[self.ubicado.id]))
         self.assertEqual(posicion['estado'], Equipo.Estado.DISPONIBLE)
 
+    def test_la_posicion_trae_los_datos_del_panel_lateral(self):
+        Equipo.objects.filter(pk=self.ubicado.pk).update(
+            patente='ABCD12', horometro_actual=Decimal('123.4')
+        )
+        posicion = self.client.get(reverse('flota:posiciones')).json()['posiciones'][0]
+
+        self.assertEqual(posicion['patente'], 'ABCD12')
+        self.assertEqual(posicion['horometro'], '123.4')
+        self.assertEqual(posicion['tipo'], 'Grúa horquilla')
+
     def test_sin_coordenadas_el_mapa_recibe_lista_vacia(self):
         Equipo.objects.filter(pk=self.ubicado.pk).update(latitud=None, longitud=None)
         datos = self.client.get(reverse('flota:posiciones')).json()

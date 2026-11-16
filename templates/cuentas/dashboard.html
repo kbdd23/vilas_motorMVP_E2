@@ -35,6 +35,20 @@
         <p class="mapa-subtitulo">Toca una máquina del mapa para abrir su ficha.</p>
         <div id="mapa-flota" class="mapa-flota" data-endpoint="{% url 'flota:posiciones' %}" role="application" aria-label="Mapa de la flota en vivo"></div>
         <p class="mapa-aviso" id="mapa-flota-aviso" aria-live="polite" hidden></p>
+        <div class="drawer-fondo" id="drawer-equipo-fondo" hidden></div>
+        <aside class="drawer-equipo" id="drawer-equipo" role="dialog" aria-modal="true" aria-labelledby="drawer-equipo-codigo" hidden>
+            <button type="button" class="drawer-cerrar" id="drawer-equipo-cerrar" aria-label="Cerrar ficha del equipo">×</button>
+            <p class="drawer-etiqueta">Equipo</p>
+            <h3 id="drawer-equipo-codigo"></h3>
+            <p class="drawer-detalle" id="drawer-equipo-detalle"></p>
+            <dl class="drawer-datos">
+                <div><dt>Estado</dt><dd><span class="drawer-estado" id="drawer-equipo-estado"></span></dd></div>
+                <div><dt>Patente</dt><dd id="drawer-equipo-patente"></dd></div>
+                <div><dt>Horómetro</dt><dd id="drawer-equipo-horometro"></dd></div>
+                <div><dt>Última señal</dt><dd id="drawer-equipo-senal"></dd></div>
+            </dl>
+            <a class="btn btn-primary drawer-enlace" id="drawer-equipo-enlace" href="#">Abrir ficha completa</a>
+        </aside>
     </article>
 </section>
 {% endblock %}

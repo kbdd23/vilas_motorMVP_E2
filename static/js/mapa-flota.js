@@ -20,6 +20,12 @@
     var aviso = document.getElementById('mapa-flota-aviso');
     var endpoint = contenedor.getAttribute('data-endpoint');
 
+    var drawer = document.getElementById('drawer-equipo');
+    var drawerFondo = document.getElementById('drawer-equipo-fondo');
+    var drawerCerrar = document.getElementById('drawer-equipo-cerrar');
+    var drawerEnlace = document.getElementById('drawer-equipo-enlace');
+    var hayDrawer = Boolean(drawer && drawerFondo && drawerCerrar);
+
     function mostrarAviso(texto) {
         if (!aviso) {
             return;
@@ -126,16 +132,81 @@
             '<a href="' + escaparHtml(posicion.url) + '">Abrir ficha →</a>';
     }
 
+    function formatearSenal(iso) {
+        if (!iso) {
+            return 'Sin reportar';
+        }
+        var fecha = new Date(iso);
+        if (isNaN(fecha.getTime())) {
+            return 'Sin reportar';
+        }
+        return fecha.toLocaleString('es-CL', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function escribir(id, texto) {
+        var elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.textContent = texto;
+        }
+    }
+
+    function abrirDrawer(posicion) {
+        escribir('drawer-equipo-codigo', posicion.codigo);
+        escribir('drawer-equipo-detalle', posicion.detalle || 'Sin detalle registrado');
+        escribir('drawer-equipo-patente', posicion.patente || '—');
+        escribir('drawer-equipo-horometro', posicion.horometro || '—');
+        escribir('drawer-equipo-senal', formatearSenal(posicion.senal));
+
+        var estado = document.getElementById('drawer-equipo-estado');
+        if (estado) {
+            estado.textContent = posicion.estado_etiqueta;
+            estado.setAttribute('data-tono', tonoDelEstado(posicion.estado));
+        }
+        if (drawerEnlace) {
+            drawerEnlace.setAttribute('href', posicion.url);
+        }
+
+        drawer.hidden = false;
+        drawerFondo.hidden = false;
+        drawerCerrar.focus();
+    }
+
+    function cerrarDrawer() {
+        drawer.hidden = true;
+        drawerFondo.hidden = true;
+    }
+
+    if (hayDrawer) {
+        drawerCerrar.addEventListener('click', cerrarDrawer);
+        drawerFondo.addEventListener('click', cerrarDrawer);
+        document.addEventListener('keydown', function (evento) {
+            if (evento.key === 'Escape' && !drawer.hidden) {
+                cerrarDrawer();
+            }
+        });
+    }
+
     function dibujar(datos) {
         marcadores.clearLayers();
 
         datos.posiciones.forEach(function (posicion) {
-            L.marker([posicion.lat, posicion.lng], {
+            var marcador = L.marker([posicion.lat, posicion.lng], {
                 icon: iconoEquipo(posicion),
                 title: posicion.codigo
-            })
-                .bindPopup(contenidoPopup(posicion))
-                .addTo(marcadores);
+            });
+
+            if (hayDrawer) {
+                marcador.on('click', function () {
+                    abrirDrawer(posicion);
+                });
+            } else {
+                marcador.bindPopup(contenidoPopup(posicion));
+            }
+
+            marcador.addTo(marcadores);
         });
 
         if (datos.posiciones.length) {

@@ -36,6 +36,13 @@ class DashboardTest(TestCase):
     def test_home_redirige_al_dashboard(self):
         self.assertRedirects(self.client.get('/'), reverse('cuentas:dashboard'))
 
+    def test_el_dashboard_incluye_el_panel_del_equipo(self):
+        respuesta = self.client.get(reverse('cuentas:dashboard'))
+
+        self.assertContains(respuesta, 'drawer-equipo')
+        self.assertContains(respuesta, 'drawer-equipo-codigo')
+        self.assertContains(respuesta, reverse('flota:posiciones'))
+
     def test_cuenta_lo_que_hay_que_hacer(self):
         """Los contadores salen de las bandejas, no de la imaginación."""
         SolicitudHorometro.objects.create(
