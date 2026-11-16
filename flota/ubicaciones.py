@@ -3,29 +3,39 @@
 Las coordenadas de ejemplo existen para que el panel se pueda revisar antes de
 conectar telemetría real. El cálculo es determinista: el mismo código de equipo
 siempre cae en la misma coordenada, así el mapa no baila entre siembras.
+
+La dispersión es seudoleatoria y no modular: los restos de una división formaban
+una rejilla visible sobre el mapa, que delataba datos falsos.
 """
 
+import hashlib
 from decimal import Decimal
 
-# Faenas de ejemplo en la Región de Tarapacá: el mapa abre mirando esta zona.
+# Faenas de ejemplo en la Región de Tarapacá, todas en tierra firme: si el centro
+# cae en la costa, media flota termina dibujada en el océano.
 FAENAS_DEMO = (
-    ('Iquique', Decimal('-20.220800'), Decimal('-70.141400')),
-    ('Alto Hospicio', Decimal('-20.271700'), Decimal('-70.104000')),
-    ('Pozo Almonte', Decimal('-20.257200'), Decimal('-69.786400')),
-    ('Pica', Decimal('-20.490600'), Decimal('-69.330300')),
+    ('Iquique', Decimal('-20.220000'), Decimal('-70.140000')),
+    ('Alto Hospicio', Decimal('-20.270000'), Decimal('-70.105000')),
+    ('Pozo Almonte', Decimal('-20.256000'), Decimal('-69.786000')),
+    ('Pica', Decimal('-20.490000'), Decimal('-69.330000')),
 )
 
-# Medio grado de ancho basta para que los marcadores no se apilen en un punto.
-DISPERSION = Decimal('0.05')
+DISPERSION = Decimal('0.008')
+
+
+def _desplazamiento(semilla, eje):
+    """Devuelve un decimal entre -1 y 1, estable para la misma semilla y eje."""
+    digest = hashlib.sha256(f'{semilla}:{eje}'.encode('utf-8')).hexdigest()
+    entero = int(digest[:8], 16)
+    return Decimal(entero % 2001 - 1000) / Decimal(1000)
 
 
 def ubicacionDemo(codigo):
     """Devuelve (latitud, longitud) estable para el código de un equipo."""
-    semilla = sum(ord(caracter) for caracter in codigo)
-    _, latitud_base, longitud_base = FAENAS_DEMO[semilla % len(FAENAS_DEMO)]
+    digest = hashlib.sha256(codigo.encode('utf-8')).digest()
+    _, latitud_base, longitud_base = FAENAS_DEMO[digest[0] % len(FAENAS_DEMO)]
 
-    # Dos restos distintos para que el desplazamiento no sea una diagonal perfecta.
-    desplazamiento_lat = DISPERSION * Decimal((semilla % 19) - 9) / Decimal(9)
-    desplazamiento_lng = DISPERSION * Decimal((semilla % 13) - 6) / Decimal(6)
+    latitud = latitud_base + DISPERSION * _desplazamiento(codigo, 'lat')
+    longitud = longitud_base + DISPERSION * _desplazamiento(codigo, 'lng')
 
-    return (latitud_base + desplazamiento_lat, longitud_base + desplazamiento_lng)
+    return (round(latitud, 6), round(longitud, 6))

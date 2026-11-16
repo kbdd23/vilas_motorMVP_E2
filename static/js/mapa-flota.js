@@ -9,8 +9,8 @@
     'use strict';
 
     var INTERVALO_ACTUALIZACION = 30000;
-    var CENTRO_INICIAL = [-20.2300, -70.1000];
-    var ZOOM_INICIAL = 10;
+    var CENTRO_INICIAL = [-20.2280, -70.1150];
+    var ZOOM_INICIAL = 12;
 
     var contenedor = document.getElementById('mapa-flota');
     if (!contenedor) {
@@ -86,11 +86,13 @@
     teselasArcGis.addTo(mapa);
 
     function iconoGrupo(grupo) {
+        var cantidad = grupo.getChildCount();
+        var tamano = cantidad < 10 ? 30 : (cantidad < 100 ? 36 : 44);
         return L.divIcon({
             className: 'marcador-grupo',
-            html: '<span>' + grupo.getChildCount() + '</span>',
-            iconSize: [34, 34],
-            iconAnchor: [17, 17]
+            html: '<span style="width:' + tamano + 'px;height:' + tamano + 'px">' + cantidad + '</span>',
+            iconSize: [tamano, tamano],
+            iconAnchor: [tamano / 2, tamano / 2]
         });
     }
 
@@ -107,9 +109,9 @@
         return L.divIcon({
             className: 'marcador-equipo',
             html: '<span class="marcador-punto" data-tono="' + tonoDelEstado(posicion.estado) + '"></span>',
-            iconSize: [16, 16],
-            iconAnchor: [8, 8],
-            popupAnchor: [0, -8]
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+            popupAnchor: [0, -7]
         });
     }
 
@@ -140,7 +142,10 @@
             var esquinas = datos.posiciones.map(function (posicion) {
                 return [posicion.lat, posicion.lng];
             });
-            mapa.fitBounds(L.latLngBounds(esquinas).pad(0.15), { maxZoom: 13 });
+            mapa.fitBounds(L.latLngBounds(esquinas), {
+                padding: [28, 28],
+                maxZoom: 14
+            });
         }
 
         if (!datos.posiciones.length) {

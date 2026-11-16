@@ -1688,8 +1688,9 @@ th[aria-sort="descending"] .sort-button::after {
     display: block;
     width: 14px;
     height: 14px;
-    border: 2px solid #0b0b0c;
-    transform: rotate(45deg);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .45);
 }
 
 .marcador-punto[data-tono="verde"] {
@@ -1711,14 +1712,15 @@ th[aria-sort="descending"] .sort-button::after {
 .marcador-grupo span {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
-    border: 2px solid #fff;
+    border: 3px solid #fff;
+    border-radius: 50%;
     background: var(--rojo-taller, #e10600);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
     color: #fff;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1;
 }
 
 .mapa-flota .leaflet-container {
