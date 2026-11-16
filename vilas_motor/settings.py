@@ -48,6 +48,10 @@ LOGIN_REDIRECT_URL = 'cuentas:home'
 LOGOUT_REDIRECT_URL = 'cuentas:login'
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 
+# Segundo paso de verificación tras el login. Es demostrativo: no envía nada,
+# el código se muestra en pantalla. Se apaga con SEGUNDO_FACTOR_DEMO=False.
+SEGUNDO_FACTOR_DEMO = os.getenv('SEGUNDO_FACTOR_DEMO', 'True') == 'True'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -57,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.LoginRequiredMiddleware',
     'cuentas.middleware.VerificacionPendienteMiddleware',
+    'cuentas.middleware.SegundoFactorMiddleware',
     'auditoria.middleware.UsuarioActualMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

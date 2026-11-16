@@ -1932,3 +1932,76 @@ th[aria-sort="descending"] .sort-button::after {
     background: #232326;
     color: #a1a1aa;
 }
+
+/* ===== Verificación en dos pasos ===== */
+.auth-dos-pasos {
+    max-width: 460px;
+}
+
+.demo-aviso {
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border-left: 3px solid var(--rojo-taller, #e10600);
+    background: #f7f7f7;
+    color: #52525b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.demo-aviso strong {
+    color: var(--negro, #0b0b0c);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    letter-spacing: .18em;
+}
+
+.codigo-casillas {
+    display: flex;
+    gap: 8px;
+    margin: 6px 0 18px;
+}
+
+.codigo-casillas input {
+    width: 48px;
+    height: 56px;
+    padding: 0;
+    border: 1px solid var(--negro, #0b0b0c);
+    border-radius: 0;
+    background: #fff;
+    color: var(--negro, #0b0b0c);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.codigo-casillas input:focus {
+    outline: 0;
+    border-color: var(--rojo-taller, #e10600);
+    box-shadow: inset 0 0 0 1px var(--rojo-taller, #e10600);
+}
+
+.enlace-boton {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--rojo-taller, #e10600);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .demo-aviso {
+    background: #232326;
+    color: #a1a1aa;
+}
+
+[data-theme="dark"] .demo-aviso strong {
+    color: #fff;
+}
+
+[data-theme="dark"] .codigo-casillas input {
+    border-color: #36363a;
+    background: #161618;
+    color: #fff;
+}

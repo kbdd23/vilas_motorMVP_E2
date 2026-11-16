@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required, user_passes_test
+from django.contrib.auth.views import LoginView
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from arriendos.models import Arriendo
 from cuentas.busqueda import buscar_todo
@@ -313,3 +316,59 @@ def buscar(request):
     if request.GET.get('formato') == 'json':
         return JsonResponse(resultados)
     return render(request, 'cuentas/busqueda.html', {'texto': texto, 'resultados': resultados})
+
+
+CODIGO_SEGUNDO_FACTOR = '123456'
+LARGO_CODIGO_SEGUNDO_FACTOR = len(CODIGO_SEGUNDO_FACTOR)
+
+
+class LoginConSegundoFactor(LoginView):
+    """Login normal, pero deja la sesión a la espera del código de verificación.
+
+    La marca se pone acá y no en una señal de login para que solo afecte a quien
+    entró por el formulario: una sesión creada de otra forma no queda pendiente.
+    """
+
+    def form_valid(self, form):
+        respuesta = super().form_valid(form)
+        if settings.SEGUNDO_FACTOR_DEMO:
+            self.request.session['segundo_factor_pendiente'] = True
+            self.request.session.pop('segundo_factor_confirmado', None)
+        return respuesta
+
+
+def verificacion_dos_pasos(request):
+    """Segundo paso del login: código demostrativo, sin envío real.
+
+    El código se muestra en la propia pantalla porque no hay proveedor de SMS ni
+    de correo detrás: sirve para enseñar el flujo completo en la defensa.
+    """
+    if not request.user.is_authenticated:
+        return redirect('cuentas:login')
+    if request.session.get('segundo_factor_confirmado'):
+        return redirect('cuentas:dashboard')
+
+    error = None
+    siguiente = request.POST.get('siguiente') or request.GET.get('next', '')
+
+    if request.method == 'POST':
+        digitos = [
+            (request.POST.get(f'digito_{posicion}') or '').strip()
+            for posicion in range(1, LARGO_CODIGO_SEGUNDO_FACTOR + 1)
+        ]
+        if ''.join(digitos) == CODIGO_SEGUNDO_FACTOR:
+            request.session['segundo_factor_confirmado'] = True
+            request.session.pop('segundo_factor_pendiente', None)
+            if siguiente and url_has_allowed_host_and_scheme(
+                siguiente, allowed_hosts={request.get_host()}
+            ):
+                return redirect(siguiente)
+            return redirect('cuentas:dashboard')
+        error = f'El código no coincide. En modo demostración usa {CODIGO_SEGUNDO_FACTOR}.'
+
+    return render(request, 'cuentas/verificacion_dos_pasos.html', {
+        'error': error,
+        'codigo_demo': CODIGO_SEGUNDO_FACTOR if settings.SEGUNDO_FACTOR_DEMO else '',
+        'posiciones': range(1, LARGO_CODIGO_SEGUNDO_FACTOR + 1),
+        'siguiente': siguiente,
+    })

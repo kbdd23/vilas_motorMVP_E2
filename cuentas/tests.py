@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from urllib.parse import parse_qs, urlparse
 
 from django.test import TestCase
 from django.urls import reverse
@@ -267,3 +268,79 @@ class ManualDeUsoTest(TestCase):
             respuesta,
             f"{reverse('cuentas:login')}?next={reverse('cuentas:manual')}",
         )
+
+
+class SegundoFactorDemoTest(TestCase):
+    """El login por formulario pide el código demostrativo antes de dejar pasar."""
+
+    def setUp(self):
+        self.rol, _ = Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(
+            email='dos@vilas.cl', password='clave-segura-123', nombre='Dos Pasos'
+        )
+        self.usuario.email_verificado = True
+        self.usuario.save(update_fields=['email_verificado'])
+
+    def _entrar(self):
+        return self.client.post(reverse('cuentas:login'), {
+            'username': 'dos@vilas.cl',
+            'password': 'clave-segura-123',
+        })
+
+    def _codigo(self, codigo):
+        return {
+            f'digito_{posicion}': digito
+            for posicion, digito in enumerate(codigo, start=1)
+        }
+
+    def test_el_login_deja_la_sesion_a_la_espera_del_codigo(self):
+        self._entrar()
+        respuesta = self.client.get(reverse('cuentas:dashboard'))
+
+        self.assertRedirects(respuesta, reverse('cuentas:verificacion_dos_pasos'))
+
+    def test_el_codigo_correcto_abre_el_panel(self):
+        self._entrar()
+        respuesta = self.client.post(
+            reverse('cuentas:verificacion_dos_pasos'), self._codigo('123456')
+        )
+
+        self.assertRedirects(respuesta, reverse('cuentas:dashboard'))
+        self.assertEqual(self.client.get(reverse('cuentas:dashboard')).status_code, 200)
+
+    def test_el_codigo_incorrecto_no_abre_el_panel(self):
+        self._entrar()
+        respuesta = self.client.post(
+            reverse('cuentas:verificacion_dos_pasos'), self._codigo('000000')
+        )
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'no coincide')
+        self.assertRedirects(
+            self.client.get(reverse('cuentas:dashboard')),
+            reverse('cuentas:verificacion_dos_pasos'),
+        )
+
+    def test_la_pantalla_muestra_el_codigo_de_demostracion(self):
+        self._entrar()
+        respuesta = self.client.get(reverse('cuentas:verificacion_dos_pasos'))
+
+        self.assertContains(respuesta, 'Modo demostración')
+        self.assertContains(respuesta, '123456')
+
+    def test_sin_sesion_manda_al_login(self):
+        respuesta = self.client.get(reverse('cuentas:verificacion_dos_pasos'))
+        destino = urlparse(respuesta.url)
+
+        self.assertEqual(destino.path, reverse('cuentas:login'))
+        self.assertEqual(
+            parse_qs(destino.query).get('next'),
+            [reverse('cuentas:verificacion_dos_pasos')],
+        )
+
+    def test_con_el_interruptor_apagado_no_pide_codigo(self):
+        with self.settings(SEGUNDO_FACTOR_DEMO=False):
+            self._entrar()
+            respuesta = self.client.get(reverse('cuentas:dashboard'))
+
+        self.assertEqual(respuesta.status_code, 200)

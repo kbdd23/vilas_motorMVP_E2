@@ -19,11 +19,12 @@ urlpatterns = [
     path('clientes/nueva/', views.crear_cliente, name='crear_cliente'),
     path('usuarios/', views.lista_usuarios, name='usuarios'),
     path('usuarios/nuevo/', views.crear_usuario, name='crear_usuario'),
-    path('login/', auth_views.LoginView.as_view(
+    path('login/', views.LoginConSegundoFactor.as_view(
         template_name='cuentas/login.html',
         authentication_form=LoginForm,
         redirect_authenticated_user=True,
     ), name='login'),
+    path('verificacion/', views.verificacion_dos_pasos, name='verificacion_dos_pasos'),
     path('recuperar-acceso/', auth_views.PasswordResetView.as_view(
         template_name='cuentas/password_reset_form.html',
         email_template_name='cuentas/password_reset_email.txt',

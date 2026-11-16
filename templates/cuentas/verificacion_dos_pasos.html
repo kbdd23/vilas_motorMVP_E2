@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verificación en dos pasos — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="auth-box auth-dos-pasos">
+    <h1>Verificación en dos pasos</h1>
+    <p class="page-subtitle">Escribe el código de seis dígitos para confirmar tu identidad.</p>
+
+    {% if codigo_demo %}
+        <p class="demo-aviso">
+            Modo demostración: el código es <strong>{{ codigo_demo }}</strong>.
+            No se envía por correo ni por mensaje.
+        </p>
+    {% endif %}
+
+    {% if error %}
+        <div class="form-errors">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" class="form codigo-form" data-codigo-form>
+        {% csrf_token %}
+        <input type="hidden" name="siguiente" value="{{ siguiente }}">
+        <div class="codigo-casillas">
+            {% for posicion in posiciones %}
+                <input type="text" name="digito_{{ posicion }}" inputmode="numeric" maxlength="1"
+                       pattern="[0-9]" aria-label="Dígito {{ posicion }}" autocomplete="one-time-code" required>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary">Verificar</button>
+    </form>
+
+    <form method="post" action="{% url 'cuentas:logout' %}" class="auth-helper">
+        {% csrf_token %}
+        <button type="submit" class="enlace-boton">Volver al inicio de sesión</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/verificacion.js' %}"></script>
+{% endblock %}
