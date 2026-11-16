@@ -29,7 +29,11 @@
 </aside>
 <div class="app-content">
     <header class="app-topbar">
-        <div class="top-search"><span>⌕</span><input type="search" placeholder="Buscar equipo, OT o cliente..." aria-label="Buscar equipo, orden o cliente"></div>
+        <form class="top-search" method="get" action="{% url 'cuentas:buscar' %}" role="search" autocomplete="off" data-buscador-global>
+            <span aria-hidden="true">⌕</span>
+            <input type="search" name="q" id="buscador-global" value="{{ request.GET.q|default:'' }}" placeholder="Buscar equipo, OT o cliente..." aria-label="Buscar equipo, orden o cliente" aria-expanded="false" aria-controls="buscador-panel">
+            <div class="buscador-panel" id="buscador-panel" role="listbox" aria-label="Resultados de búsqueda" hidden></div>
+        </form>
         <div class="top-user"><span class="notification-dot">●</span><span class="user-avatar">{{ user.nombre|slice:":1"|upper }}</span><span>{{ user.email }}</span><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Cambiar tema">◐</button></div>
     </header>
 {% else %}
@@ -46,6 +50,7 @@
 {% if user.is_authenticated %}</div>{% else %}<footer class="site-footer"><div class="container"><span>Vilas Motor — Sistema de gestión de mantenimiento</span></div></footer>{% endif %}
 <script src="{% static 'js/toasts.js' %}"></script>
 <script src="{% static 'js/sortable-tables.js' %}"></script>
+<script src="{% static 'js/buscador.js' %}"></script>
 <script>document.getElementById('theme-toggle').addEventListener('click', function () { var root=document.documentElement; var dark=root.getAttribute('data-theme')==='dark'; if(dark){root.removeAttribute('data-theme');localStorage.setItem('vilas-theme','light')}else{root.setAttribute('data-theme','dark');localStorage.setItem('vilas-theme','dark')}}); if(history.length>1){var backButton=document.querySelector('.back-button');if(backButton)backButton.classList.add('visible')}</script>
 </body>
 </html>

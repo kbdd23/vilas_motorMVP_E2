@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_not_required, user_passes_test
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from arriendos.models import Arriendo
+from cuentas.busqueda import buscar_todo
 from cuentas.forms import ClienteForm, UsuarioForm, VerificacionForm
 from cuentas.models import Cliente, Usuario
 from cuentas.services import codigoEsValido, confirmarCuenta, enviarCodigoVerificacion
@@ -293,3 +295,16 @@ def mantenimientos_por_vencer(request):
         f'Servicios que se deben programar dentro de las próximas {UMBRAL_ALERTA_HORAS} horas.',
         'No hay mantenciones próximas dentro del umbral.',
     )
+
+
+def buscar(request):
+    """Buscador global de equipos, órdenes y clientes.
+
+    Con ``formato=json`` responde el desplegable del panel; sin él arma una
+    página de resultados, que es lo que ve alguien sin JavaScript.
+    """
+    texto = request.GET.get('q', '')
+    resultados = buscar_todo(texto)
+    if request.GET.get('formato') == 'json':
+        return JsonResponse(resultados)
+    return render(request, 'cuentas/busqueda.html', {'texto': texto, 'resultados': resultados})

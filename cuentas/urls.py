@@ -9,6 +9,7 @@ app_name = 'cuentas'
 urlpatterns = [
     path('', views.home, name='home'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('buscar/', views.buscar, name='buscar'),
     path('mantenciones-pendientes/', views.mantenimientos_pendientes, name='mantenimientos_pendientes'),
     path('mantenciones-vencidas/', views.mantenimientos_vencidos, name='mantenimientos_vencidos'),
     path('mantenciones-por-vencer/', views.mantenimientos_por_vencer, name='mantenimientos_por_vencer'),

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar {{ texto }} — Vilas Motor{% endblock %}
+
+{% block content %}
+<h1>Buscar</h1>
+<p class="page-subtitle">
+    {% if texto %}
+        Resultados para «{{ texto }}»: {{ resultados.total }} coincidencia{{ resultados.total|pluralize:"s" }}.
+    {% else %}
+        Escribe al menos dos caracteres en el buscador del panel.
+    {% endif %}
+</p>
+
+{% if resultados.equipos %}
+<h2>Equipos</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for equipo in resultados.equipos %}
+        <tr>
+            <td><a href="{{ equipo.url }}">{{ equipo.titulo }}</a></td>
+            <td>{{ equipo.detalle|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if resultados.ordenes %}
+<h2>Órdenes de trabajo</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Orden</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orden in resultados.ordenes %}
+        <tr>
+            <td><a href="{{ orden.url }}">{{ orden.titulo }}</a></td>
+            <td>{{ orden.detalle|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if resultados.clientes %}
+<h2>Clientes</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Razón social</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in resultados.clientes %}
+        <tr>
+            <td><a href="{{ cliente.url }}">{{ cliente.titulo }}</a></td>
+            <td>{{ cliente.detalle|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if texto and not resultados.total %}
+<p class="mensaje-vacio">Sin coincidencias. Prueba con el código del equipo, el número de OT o la razón social.</p>
+{% endif %}
+{% endblock %}
