@@ -394,3 +394,38 @@ class ExportacionFlotaTest(TestCase):
         self.assertEqual(hoja['A4'].value, 'N° DE EQUIPO: EQ-001')
         self.assertEqual(hoja['B11'].value, '89867')
         self.assertEqual(hoja['D11'].value, 'Preventiva')
+
+    def _entrar_con_rol(self, nombre_rol):
+        """Cambia la sesión a un usuario con otro rol."""
+        rol, _ = Rol.objects.get_or_create(nombre=nombre_rol, defaults={'descripcion': nombre_rol})
+        usuario = Usuario.objects.create_user(
+            email=f'{nombre_rol}@vilas.cl', password='test1234', nombre=nombre_rol
+        )
+        usuario.rol = rol
+        usuario.email_verificado = True
+        usuario.save(update_fields=['rol', 'email_verificado'])
+        self.client.force_login(usuario)
+
+    def test_otro_rol_no_puede_exportar(self):
+        self._entrar_con_rol('operador')
+
+        self.assertEqual(self.client.get(reverse('flota:exportar_flota')).status_code, 403)
+        self.assertEqual(
+            self.client.get(
+                reverse('flota:exportar_historial', args=[self.disponible.id])
+            ).status_code,
+            403,
+        )
+
+    def test_el_boton_solo_aparece_para_planificador(self):
+        self._entrar_con_rol('operador')
+        self.assertNotContains(
+            self.client.get(reverse('flota:equipos')),
+            reverse('flota:exportar_flota'),
+        )
+
+        self.client.force_login(self.usuario)
+        self.assertContains(
+            self.client.get(reverse('flota:equipos')),
+            reverse('flota:exportar_flota'),
+        )

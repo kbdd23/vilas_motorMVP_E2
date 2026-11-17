@@ -4,6 +4,7 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from cuentas.permisos import puedeExportar, requiere_rol_exportador
 from flota.models import Equipo
 from flota.services import mensajeDeBloqueo, puedeEntrarAMantencion
 from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
@@ -58,6 +59,7 @@ def _render_lista(request, form_orden=None, abrir_orden=False):
         'abrir_orden': abrir_orden,
         'filtro_estado': filtro_estado,
         'etiqueta_filtro': etiqueta_filtro,
+        'puede_exportar': puedeExportar(request.user),
     })
 
 
@@ -289,6 +291,7 @@ def borrar_orden(request, pk):
 
 
 @login_required
+@requiere_rol_exportador
 def exportar_ordenes(request):
     """Descarga el historial de órdenes de trabajo en Excel.
 

@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from arriendos.models import Arriendo
+from cuentas.permisos import puedeExportar, requiere_rol_exportador
 from horometros.services import fuenteSugerida
 from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
 
@@ -32,6 +33,7 @@ def lista_equipos(request):
         'estados': Equipo.Estado.choices,
         'estado_filtrado': estado,
         'etiqueta_estado_filtrado': estados_validos.get(estado),
+        'puede_exportar': puedeExportar(request.user),
     })
 
 
@@ -96,6 +98,7 @@ def detalle_equipo(request, pk):
     return render(request, 'flota/detalle_equipo.html', {
         'equipo': equipo,
         'fuente_sugerida': fuenteSugerida(equipo),
+        'puede_exportar': puedeExportar(request.user),
     })
 
 
@@ -172,6 +175,7 @@ def posiciones_flota(request):
 
 
 @login_required
+@requiere_rol_exportador
 def exportar_flota(request):
     """Descarga el inventario en Excel, con el mismo filtro de la pantalla.
 
@@ -192,6 +196,7 @@ def exportar_flota(request):
 
 
 @login_required
+@requiere_rol_exportador
 def exportar_historial_equipo(request, pk):
     """Descarga el historial de mantención de un equipo en el formato del taller."""
     equipo = get_object_or_404(Equipo.objects.select_related('tipo_equipo'), pk=pk)

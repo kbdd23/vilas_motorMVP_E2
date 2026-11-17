@@ -537,3 +537,21 @@ class ExportacionOrdenesTest(TestCase):
 
         self.assertEqual(hoja.max_row, 2)
         self.assertEqual(hoja['A2'].value, '1001')
+
+    def test_otro_rol_no_puede_exportar_ni_ve_el_boton(self):
+        rol, _ = Rol.objects.get_or_create(nombre='operador', defaults={'descripcion': 'Operador'})
+        usuario = Usuario.objects.create_user(
+            email='operador-ot@vilas.cl', password='test1234', nombre='Operador'
+        )
+        usuario.rol = rol
+        usuario.email_verificado = True
+        usuario.save(update_fields=['rol', 'email_verificado'])
+        self.client.force_login(usuario)
+
+        self.assertEqual(
+            self.client.get(reverse('mantencion:exportar_ordenes')).status_code, 403
+        )
+        self.assertNotContains(
+            self.client.get(reverse('mantencion:ordenes_trabajo')),
+            reverse('mantencion:exportar_ordenes'),
+        )
