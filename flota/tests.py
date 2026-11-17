@@ -365,6 +365,15 @@ class ExportacionFlotaTest(TestCase):
         self.assertEqual(hoja['A1'].value, 'Código')
         self.assertEqual(hoja.max_row, 3)
 
+    def test_exportar_flota_con_ultima_senal_no_falla(self):
+        """La última señal llega con zona horaria y openpyxl la rechaza si no se convierte."""
+        Equipo.objects.filter(pk=self.disponible.pk).update(ultima_senal=timezone.now())
+        respuesta = self.client.get(reverse('flota:exportar_flota'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        hoja = self._hoja(respuesta)
+        self.assertIsNotNone(hoja['I2'].value)
+
     def test_exportar_flota_respeta_el_filtro(self):
         respuesta = self.client.get(reverse('flota:exportar_flota'), {'estado': 'EN_FAENA'})
         hoja = self._hoja(respuesta)

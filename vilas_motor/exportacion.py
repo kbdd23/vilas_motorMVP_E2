@@ -41,10 +41,21 @@ def escribir_encabezado(hoja, fila, titulos):
         celda.alignment = CENTRADO
 
 
+def _valor_para_excel(valor):
+    """openpyxl rechaza fechas con zona horaria; Excel solo entiende hora local.
+
+    Con USE_TZ activo, MySQL devuelve los datetime con tzinfo, así que se pasan a
+    la zona del proyecto antes de escribir la celda.
+    """
+    if hasattr(valor, 'tzinfo') and valor.tzinfo is not None:
+        return timezone.make_naive(valor, timezone.get_current_timezone())
+    return valor
+
+
 def escribir_valores(hoja, fila, valores):
     """Escribe una fila de datos y aplica bordes a cada celda."""
     for columna, valor in enumerate(valores, start=1):
-        celda = hoja.cell(row=fila, column=columna, value=valor)
+        celda = hoja.cell(row=fila, column=columna, value=_valor_para_excel(valor))
         celda.border = BORDE
         if hasattr(valor, 'hour'):
             celda.number_format = 'DD-MM-YYYY HH:MM'
