@@ -417,6 +417,13 @@ class ExportacionFlotaTest(TestCase):
             403,
         )
 
+    def test_el_administrador_tambien_puede_exportar(self):
+        self._entrar_con_rol('administrador')
+
+        respuesta = self.client.get(reverse('flota:exportar_flota'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn('spreadsheetml', respuesta['Content-Type'])
+
     def test_el_boton_solo_aparece_para_planificador(self):
         self._entrar_con_rol('operador')
         self.assertNotContains(

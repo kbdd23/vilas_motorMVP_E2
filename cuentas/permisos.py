@@ -1,14 +1,14 @@
 """Reglas de acceso a acciones que no son para cualquier cuenta.
 
-La exportación de planillas queda reservada al rol planificador: son datos de
-toda la flota y del historial de mantención, no de consulta diaria.
+La exportación de planillas queda reservada a planificadores y administradores:
+son datos de toda la flota y del historial de mantención, no de consulta diaria.
 """
 
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied
 
-ROL_EXPORTADOR = 'planificador'
+ROLES_EXPORTADORES = frozenset({'planificador', 'administrador'})
 
 
 def nombreDelRol(usuario):
@@ -18,10 +18,10 @@ def nombreDelRol(usuario):
 
 
 def puedeExportar(usuario):
-    """True solo para cuentas activas con el rol planificador."""
+    """True para cuentas activas con rol planificador o administrador."""
     if not usuario.is_authenticated:
         return False
-    return nombreDelRol(usuario) == ROL_EXPORTADOR
+    return nombreDelRol(usuario) in ROLES_EXPORTADORES
 
 
 def requiere_rol_exportador(vista):
