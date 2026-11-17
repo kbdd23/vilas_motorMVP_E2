@@ -108,6 +108,14 @@ class DashboardTest(TestCase):
         self.assertContains(response, 'Tareas urgentes')
         self.assertEqual(response.context['estados_flotas'][0]['cantidad'], 1)
 
+    def test_las_pestanas_de_tareas_filtran_la_tabla(self):
+        response = self.client.get(reverse('cuentas:dashboard'))
+
+        self.assertContains(response, 'data-filtro-tarea="todas"')
+        self.assertContains(response, 'data-filtro-tarea="vencidas"')
+        self.assertContains(response, 'data-categoria="vencidas"')
+        self.assertContains(response, 'js/tareas-dashboard.js')
+
     def test_tarjeta_mantencion_filtra_el_pronostico(self):
         plan = PlanMantencion.objects.create(tipo_equipo=self.tipo, nombre='Plan')
         ServicioPlan.objects.create(plan=plan, nombre='100h', intervalo_horas=100)

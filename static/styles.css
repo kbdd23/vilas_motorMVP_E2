@@ -2148,3 +2148,49 @@ th[aria-sort="descending"] .sort-button::after {
     text-align: center;
     text-decoration: none;
 }
+
+/* ===== Filtros de la tabla de tareas (dashboard) ===== */
+.task-tabs button {
+    padding: 8px 13px;
+    border: 1px solid #c7c7c7;
+    background: transparent;
+    color: #4b6173;
+    cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.task-tabs button.active {
+    border-color: var(--negro, #0b0b0c);
+    background: var(--negro, #0b0b0c);
+    color: #fff;
+}
+
+.task-tabs button:focus-visible {
+    outline: 2px solid var(--rojo-taller, #e10600);
+    outline-offset: 2px;
+}
+
+/* La fila es un enlace con display grid: sin esta regla, [hidden] no la oculta. */
+.task-table a[hidden] {
+    display: none;
+}
+
+[data-theme="dark"] .task-tabs button {
+    border-color: #4b4b51;
+    color: #c8c8cd;
+}
+
+[data-theme="dark"] .task-tabs button.active {
+    border-color: var(--rojo-taller, #e10600);
+    background: var(--rojo-taller, #e10600);
+    color: #fff;
+}
+
+@media (max-width: 620px) {
+    .task-tabs button {
+        padding: 6px 9px;
+    }
+}

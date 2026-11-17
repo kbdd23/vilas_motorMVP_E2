@@ -19,11 +19,16 @@
 </section>
 
 <section class="mock-bottom-grid">
-    <article class="mock-card tasks-card"><div class="card-title-line"><h2>Próximas tareas</h2><a href="{% url 'cuentas:mantenimientos_pendientes' %}">Ver todas →</a></div><div class="task-tabs"><span class="active">Todas</span><span>Vencidas ({{ servicios_vencidos }})</span><span>Por vencer ({{ servicios_por_vencer }})</span><span>Órdenes ({{ ots_abiertas }})</span></div><div class="task-table">
-        <a href="{% url 'cuentas:mantenimientos_vencidos' %}"><i class="task-symbol danger">!</i><span><strong>Mantención vencida</strong><small>Servicios cuyo intervalo ya fue cumplido.</small></span><b>{{ servicios_vencidos }}</b><em>Ver</em></a>
-        <a href="{% url 'cuentas:mantenimientos_por_vencer' %}"><i class="task-symbol warning">◷</i><span><strong>Mantención por vencer</strong><small>Programa servicios dentro del umbral.</small></span><b>{{ servicios_por_vencer }}</b><em>Ver</em></a>
-        <a href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS"><i class="task-symbol blue">▤</i><span><strong>Órdenes abiertas</strong><small>Programadas o en curso.</small></span><b>{{ ots_abiertas }}</b><em>Ver</em></a>
-        <a href="{% url 'horometros:index' %}"><i class="task-symbol neutral">◌</i><span><strong>Pedir horómetros</strong><small>Solicitudes que siguen pendientes.</small></span><b>{{ solicitudes_pendientes }}</b><em>Ver</em></a>
+    <article class="mock-card tasks-card"><div class="card-title-line"><h2>Próximas tareas</h2><a href="{% url 'cuentas:mantenimientos_pendientes' %}">Ver todas →</a></div><div class="task-tabs" role="tablist">
+        <button type="button" class="active" role="tab" aria-selected="true" data-filtro-tarea="todas">Todas</button>
+        <button type="button" role="tab" aria-selected="false" data-filtro-tarea="vencidas">Vencidas ({{ servicios_vencidos }})</button>
+        <button type="button" role="tab" aria-selected="false" data-filtro-tarea="por-vencer">Por vencer ({{ servicios_por_vencer }})</button>
+        <button type="button" role="tab" aria-selected="false" data-filtro-tarea="ordenes">Órdenes ({{ ots_abiertas }})</button>
+    </div><div class="task-table">
+        <a href="{% url 'cuentas:mantenimientos_vencidos' %}" data-categoria="vencidas"><i class="task-symbol danger">!</i><span><strong>Mantención vencida</strong><small>Servicios cuyo intervalo ya fue cumplido.</small></span><b>{{ servicios_vencidos }}</b><em>Ver</em></a>
+        <a href="{% url 'cuentas:mantenimientos_por_vencer' %}" data-categoria="por-vencer"><i class="task-symbol warning">◷</i><span><strong>Mantención por vencer</strong><small>Programa servicios dentro del umbral.</small></span><b>{{ servicios_por_vencer }}</b><em>Ver</em></a>
+        <a href="{% url 'mantencion:ordenes_trabajo' %}?estado=ABIERTAS" data-categoria="ordenes"><i class="task-symbol blue">▤</i><span><strong>Órdenes abiertas</strong><small>Programadas o en curso.</small></span><b>{{ ots_abiertas }}</b><em>Ver</em></a>
+        <a href="{% url 'horometros:index' %}" data-categoria="horometros"><i class="task-symbol neutral">◌</i><span><strong>Pedir horómetros</strong><small>Solicitudes que siguen pendientes.</small></span><b>{{ solicitudes_pendientes }}</b><em>Ver</em></a>
     </div></article>
     <aside class="mock-side-column"><article class="mock-card compact-card"><div class="card-title-line"><h2>Equipos por estado</h2><a href="{% url 'flota:equipos' %}">Ver flota →</a></div>{% for item in estados_flotas %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article>
     <article class="mock-card compact-card"><div class="card-title-line"><h2>Órdenes de trabajo</h2><a href="{% url 'mantencion:ordenes_trabajo' %}">Ver todas →</a></div>{% for item in ordenes_por_estado %}<div class="mini-bar"><span><i class="bar-{{ item.tono }}"></i>{{ item.nombre }}</span><b>{{ item.cantidad }}</b><div><em class="bar-{{ item.tono }}" style="width: {{ item.porcentaje|floatformat:0 }}%"></em></div></div>{% endfor %}</article></aside>
@@ -62,4 +67,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
 <script src="{% static 'js/mapa-flota.js' %}"></script>
+<script src="{% static 'js/tareas-dashboard.js' %}"></script>
 {% endblock %}
