@@ -1,13 +1,17 @@
+from datetime import date
 from decimal import Decimal
+from io import BytesIO
 
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from openpyxl import load_workbook
 
 from arriendos.models import Arriendo
 from cuentas.models import Cliente, Rol, Usuario
 from flota.models import Equipo, TipoEquipo
 from horometros.models import LecturaHorometro
+from mantencion.models import OrdenTrabajo
 
 
 class EquipoTest(TestCase):
@@ -327,3 +331,57 @@ class PosicionesFlotaTest(TestCase):
         self.assertEqual(datos['posiciones'], [])
         self.assertEqual(datos['total'], 0)
         self.assertEqual(datos['sin_ubicacion'], 2)
+
+
+class ExportacionFlotaTest(TestCase):
+    """Las planillas de flota respetan el filtro y traen los datos reales."""
+
+    def setUp(self):
+        self.rol, _ = Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(email='excel@vilas.cl', password='test1234', nombre='Excel')
+        self.client.force_login(self.usuario)
+        self.tipo = TipoEquipo.objects.create(
+            nombre='Grúa horquilla', unidad_medida=TipoEquipo.UnidadMedida.HORAS
+        )
+        self.disponible = Equipo.objects.create(
+            tipo_equipo=self.tipo, codigo='EQ-001',
+            estado=Equipo.Estado.DISPONIBLE, horometro_actual=Decimal('10.5'),
+        )
+        self.en_faena = Equipo.objects.create(
+            tipo_equipo=self.tipo, codigo='EQ-002', estado=Equipo.Estado.EN_FAENA,
+        )
+
+    def _hoja(self, respuesta):
+        return load_workbook(BytesIO(respuesta.content)).active
+
+    def test_exportar_flota_devuelve_un_xlsx(self):
+        respuesta = self.client.get(reverse('flota:exportar_flota'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn('spreadsheetml', respuesta['Content-Type'])
+        self.assertIn('attachment', respuesta['Content-Disposition'])
+
+        hoja = self._hoja(respuesta)
+        self.assertEqual(hoja['A1'].value, 'Código')
+        self.assertEqual(hoja.max_row, 3)
+
+    def test_exportar_flota_respeta_el_filtro(self):
+        respuesta = self.client.get(reverse('flota:exportar_flota'), {'estado': 'EN_FAENA'})
+        hoja = self._hoja(respuesta)
+
+        self.assertEqual(hoja.max_row, 2)
+        self.assertEqual(hoja['A2'].value, 'EQ-002')
+
+    def test_exportar_historial_usa_el_formato_del_taller(self):
+        OrdenTrabajo.objects.create(
+            equipo=self.disponible, tipo='PREVENTIVA', numero_ot='89867',
+            fecha_ejecucion=date(2023, 10, 16), horometro_cierre=Decimal('828.0'),
+        )
+        respuesta = self.client.get(
+            reverse('flota:exportar_historial', args=[self.disponible.id])
+        )
+        hoja = self._hoja(respuesta)
+
+        self.assertEqual(hoja['A4'].value, 'N° DE EQUIPO: EQ-001')
+        self.assertEqual(hoja['B11'].value, '89867')
+        self.assertEqual(hoja['D11'].value, 'Preventiva')

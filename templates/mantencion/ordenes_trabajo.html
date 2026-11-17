@@ -13,6 +13,7 @@
 
 <p>
     <button type="button" class="btn btn-primary" data-abrir-orden>Crear OT</button>
+    <a class="btn btn-secondary" href="{% url 'mantencion:exportar_ordenes' %}{% if filtro_estado %}?estado={{ filtro_estado }}{% endif %}">Exportar Excel</a>
 </p>
 
 <table>

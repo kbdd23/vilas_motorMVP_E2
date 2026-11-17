@@ -1,10 +1,14 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from flota.models import Equipo
 from flota.services import mensajeDeBloqueo, puedeEntrarAMantencion
+from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
+
+from .exportacion import construir_libro_ordenes
 
 from .forms import (
     CerrarOrdenForm,
@@ -282,3 +286,23 @@ def borrar_orden(request, pk):
     if orden.estado != OrdenTrabajo.Estado.CERRADA:
         orden.delete()
     return redirect('mantencion:ordenes_trabajo')
+
+
+@login_required
+def exportar_ordenes(request):
+    """Descarga el historial de órdenes de trabajo en Excel.
+
+    Respeta el filtro de la pantalla: si se están viendo solo las abiertas, el
+    archivo trae solo las abiertas.
+    """
+    filtro_estado = request.GET.get('estado')
+    ordenes = OrdenTrabajo.objects.select_related('equipo', 'servicio_plan').order_by('-id')
+
+    if filtro_estado == 'ABIERTAS':
+        ordenes = ordenes.exclude(estado=OrdenTrabajo.Estado.CERRADA)
+        sufijo = '_abiertas'
+    else:
+        sufijo = ''
+
+    libro = construir_libro_ordenes(ordenes)
+    return respuesta_excel(libro, f'ordenes_trabajo{sufijo}_{marca_de_tiempo()}.xlsx')

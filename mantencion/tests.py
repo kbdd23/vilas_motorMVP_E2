@@ -1,7 +1,9 @@
 from decimal import Decimal
+from io import BytesIO
 
 from django.test import TestCase
 from django.urls import reverse
+from openpyxl import load_workbook
 from django.utils.formats import localize
 
 from cuentas.models import Rol, Usuario
@@ -493,3 +495,45 @@ class CierreDevuelveElEquipoTest(TestCase):
         self.client.post(reverse('mantencion:cerrar_orden', args=[orden.id]), {'horometro_cierre': '100.0'})
         orden.equipo.refresh_from_db()
         self.assertEqual(orden.equipo.estado, Equipo.Estado.DISPONIBLE)
+
+
+class ExportacionOrdenesTest(TestCase):
+    """La planilla de órdenes trae los datos y respeta el filtro de abiertas."""
+
+    def setUp(self):
+        self.rol, _ = Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(email='otexcel@vilas.cl', password='test1234', nombre='OT Excel')
+        self.client.force_login(self.usuario)
+        self.tipo = TipoEquipo.objects.create(nombre='Generador', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        self.equipo = Equipo.objects.create(tipo_equipo=self.tipo, codigo='EQ-001')
+        self.abierta = OrdenTrabajo.objects.create(
+            equipo=self.equipo, tipo='PREVENTIVA', numero_ot='1001',
+            estado=OrdenTrabajo.Estado.PROGRAMADA,
+        )
+        self.cerrada = OrdenTrabajo.objects.create(
+            equipo=self.equipo, tipo='CORRECTIVA', numero_ot='1002',
+            estado=OrdenTrabajo.Estado.CERRADA,
+        )
+
+    def _hoja(self, respuesta):
+        return load_workbook(BytesIO(respuesta.content)).active
+
+    def test_exportar_ordenes_devuelve_un_xlsx(self):
+        respuesta = self.client.get(reverse('mantencion:exportar_ordenes'))
+
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn('spreadsheetml', respuesta['Content-Type'])
+        self.assertIn('attachment', respuesta['Content-Disposition'])
+
+        hoja = self._hoja(respuesta)
+        self.assertEqual(hoja['A1'].value, 'N° OT')
+        self.assertEqual(hoja.max_row, 3)
+
+    def test_exportar_ordenes_respeta_el_filtro_de_abiertas(self):
+        respuesta = self.client.get(
+            reverse('mantencion:exportar_ordenes'), {'estado': 'ABIERTAS'}
+        )
+        hoja = self._hoja(respuesta)
+
+        self.assertEqual(hoja.max_row, 2)
+        self.assertEqual(hoja['A2'].value, '1001')

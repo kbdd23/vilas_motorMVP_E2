@@ -7,7 +7,9 @@ from django.views.decorators.http import require_POST
 
 from arriendos.models import Arriendo
 from horometros.services import fuenteSugerida
+from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
 
+from .exportacion import construir_libro_flota, construir_libro_historial
 from .forms import EquipoForm, TipoEquipoForm
 from .models import Equipo, TipoEquipo
 
@@ -167,3 +169,31 @@ def posiciones_flota(request):
         'sin_ubicacion': equipos.count() - len(posiciones),
         'generado': timezone.now().isoformat(),
     })
+
+
+@login_required
+def exportar_flota(request):
+    """Descarga el inventario en Excel, con el mismo filtro de la pantalla.
+
+    Si la lista está filtrada por estado, el archivo trae solo esos equipos: un
+    export que ignora el filtro miente sobre lo que el usuario está viendo.
+    """
+    estado = request.GET.get('estado')
+    equipos = Equipo.objects.select_related('tipo_equipo').order_by('codigo')
+
+    if estado in dict(Equipo.Estado.choices):
+        equipos = equipos.filter(estado=estado)
+        sufijo = f'_{estado.lower()}'
+    else:
+        sufijo = ''
+
+    libro = construir_libro_flota(equipos)
+    return respuesta_excel(libro, f'flota{sufijo}_{marca_de_tiempo()}.xlsx')
+
+
+@login_required
+def exportar_historial_equipo(request, pk):
+    """Descarga el historial de mantención de un equipo en el formato del taller."""
+    equipo = get_object_or_404(Equipo.objects.select_related('tipo_equipo'), pk=pk)
+    libro = construir_libro_historial(equipo)
+    return respuesta_excel(libro, f'historial_{equipo.codigo}_{marca_de_tiempo()}.xlsx')

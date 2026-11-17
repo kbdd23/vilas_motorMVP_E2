@@ -13,6 +13,7 @@
 
 <p>
     <a class="btn btn-primary" href="{% url 'flota:crear_equipo' %}">Crear equipo</a>
+    <a class="btn btn-secondary" href="{% url 'flota:exportar_flota' %}{% if estado_filtrado %}?estado={{ estado_filtrado }}{% endif %}">Exportar Excel</a>
 </p>
 
 <table>

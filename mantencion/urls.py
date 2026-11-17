@@ -14,6 +14,7 @@ urlpatterns = [
     path('planes/servicios/<int:pk>/borrar/', views.borrar_servicio, name='borrar_servicio'),
     path('ordenes-trabajo/', views.lista_ordenes_trabajo, name='ordenes_trabajo'),
     path('ordenes-trabajo/nueva/', views.crear_orden, name='crear_orden'),
+    path('ordenes-trabajo/exportar/', views.exportar_ordenes, name='exportar_ordenes'),
     path('ordenes-trabajo/<int:pk>/', views.detalle_orden, name='detalle_orden'),
     path('ordenes-trabajo/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
     path('ordenes-trabajo/<int:pk>/iniciar/', views.iniciar_orden, name='iniciar_orden'),
