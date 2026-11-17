@@ -1670,6 +1670,11 @@ th[aria-sort="descending"] .sort-button::after {
     height: 440px;
     border: 1px solid #36363a;
     background: #0e0e10;
+    /* Leaflet usa z-index 400 en sus panes; sin este contexto, esos panes
+       escapan del mapa y se dibujan encima del panel lateral. */
+    position: relative;
+    z-index: 0;
+    isolation: isolate;
 }
 
 .mapa-aviso {
@@ -2012,7 +2017,7 @@ th[aria-sort="descending"] .sort-button::after {
 .drawer-fondo {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    z-index: 1000;
     background: rgba(0, 0, 0, .45);
 }
 
@@ -2020,7 +2025,7 @@ th[aria-sort="descending"] .sort-button::after {
     position: fixed;
     top: 0;
     right: 0;
-    z-index: 61;
+    z-index: 1001;
     width: min(370px, 92vw);
     height: 100%;
     padding: 26px 22px;
