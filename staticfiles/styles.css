@@ -2265,22 +2265,21 @@ th[aria-sort="descending"] .sort-button::after {
     color: #ffffff;
 }
 
-/* Columna Acción de Equipos: los dos botones van siempre en la misma fila,
-   con el mismo ancho y el texto centrado. El ancho común lo fija la etiqueta
-   más larga, así el rojo replica al azul.
+/* Columna Acción de Equipos: botones apilados, ambos del mismo ancho y con el
+   texto centrado. El ancho lo fija la etiqueta más larga, así el rojo replica
+   al azul y la columna no se estira más de lo necesario.
    "Cambiar estado" en rojo y "Modificar mantención" en azul. */
 .celda-acciones-equipo {
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 6px;
 }
 
 .celda-acciones-equipo .btn {
-    /* "min-width" en em fija el ancho de la etiqueta más larga y lo replica
-       en el otro botón; "flex: 1 1 auto" les reparte el espacio por igual. */
-    flex: 1 1 auto;
-    min-width: 11em;
+    /* "width: 100%" dentro de la columna iguala ambos botones al ancho de la
+       etiqueta más larga, sin forzar scroll horizontal en la tabla. */
+    width: 100%;
     white-space: nowrap;
     text-align: center;
     box-sizing: border-box;
