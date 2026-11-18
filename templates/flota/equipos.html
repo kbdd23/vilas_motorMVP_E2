@@ -18,6 +18,7 @@
     {% endif %}
 </p>
 
+<div class="tabla-scroll">
 <table>
     <thead>
         <tr>
@@ -52,7 +53,7 @@
                     <span class="badge badge-neutral">{{ equipo.get_estado_display }}</span>
                 {% endif %}
             </td>
-            <td>{{ equipo.horometro_actual }}</td>
+            <td>{{ equipo.horometro_actual|floatformat:1 }}</td>
             {% with m=equipo.mantencion %}
             <td data-sort-value="{% if m.horometro_objetivo is not None %}{{ m.horometro_objetivo|stringformat:'.1f' }}{% else %}999999999{% endif %}">
                 {% if m.servicio %}{{ m.horometro_objetivo|floatformat:1 }} {{ m.unidad }}<br><small style="color: var(--muted)">{{ m.servicio.nombre }}</small>{% else %}—{% endif %}
@@ -84,6 +85,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 
 <dialog id="dialogo-estado" class="dialogo-confirmacion">
     <p class="dialogo-contexto">

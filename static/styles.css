@@ -307,7 +307,6 @@ table {
     border-spacing: 0;
     background: var(--surface);
     border-radius: 10px;
-    overflow: hidden;
     box-shadow: var(--sombra-media);
     border: 1px solid var(--border);
 }
@@ -315,6 +314,41 @@ table {
 thead {
     background: var(--verde-oscuro);
     color: var(--header-text);
+}
+
+/* El borde redondeado se recorta por celda: "overflow: hidden" en <table>
+   anula el desplazamiento horizontal y cortaba las columnas de la derecha. */
+thead tr:first-child th:first-child {
+    border-top-left-radius: 9px;
+}
+
+thead tr:first-child th:last-child {
+    border-top-right-radius: 9px;
+}
+
+tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 9px;
+}
+
+tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 9px;
+}
+
+/* Contenedor de tablas anchas: desplazamiento horizontal en cualquier ancho,
+   no solo por debajo de 768px. */
+.tabla-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+    box-shadow: var(--sombra-media);
+}
+
+.tabla-scroll > table {
+    min-width: 1024px;
+    box-shadow: none;
 }
 
 th {
@@ -848,6 +882,15 @@ td a:hover {
         max-width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    /* Las tablas envueltas en .tabla-scroll ya tienen su propio contenedor:
+       se evita que la tabla se convierta en un segundo scroller. */
+    .tabla-scroll > table {
+        display: table;
+        width: 1024px;
+        max-width: none;
+        overflow: visible;
     }
 
     th,
