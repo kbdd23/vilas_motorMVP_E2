@@ -214,6 +214,16 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-# WhiteNoise para archivos estáticos en producción
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise para archivos estáticos en producción. Desde Django 5.1 el ajuste
+# STATICFILES_STORAGE ya no existe y se configura con STORAGES. Se usa la versión
+# sin manifiesto porque staticfiles/ se versiona en el repo sin staticfiles.json.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Bloqueo de inicio de sesión por fuerza bruta: tras LOGIN_MAX_INTENTOS fallos
+# seguidos para un mismo correo, el ingreso queda bloqueado LOGIN_BLOQUEO_SEGUNDOS.
+LOGIN_MAX_INTENTOS = int(os.getenv('LOGIN_MAX_INTENTOS', '5'))
+LOGIN_BLOQUEO_SEGUNDOS = int(os.getenv('LOGIN_BLOQUEO_SEGUNDOS', str(15 * 60)))

@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from cuentas.permisos import puedeExportar, requiere_rol_exportador
+from cuentas.permisos import puedeExportar, requiere_rol_exportador, requiere_rol_gestion
 from flota.models import Equipo
 from flota.services import mensajeDeBloqueo, puedeEntrarAMantencion
 from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
@@ -68,6 +68,7 @@ def lista_ordenes_trabajo(request):
     return _render_lista(request)
 
 
+@requiere_rol_gestion
 def crear_plan(request):
     """Crea un plan de mantención para un tipo de equipo."""
     if request.method == 'POST':
@@ -76,24 +77,40 @@ def crear_plan(request):
             form.save()
             return redirect('mantencion:planes')
     else:
-        form = PlanMantencionForm()
+        # Desde la lista de equipos llega con el tipo ya elegido.
+        form = PlanMantencionForm(initial={'tipo_equipo': request.GET.get('tipo_equipo')})
     return render(request, 'mantencion/crear_plan.html', {'form': form})
 
 
+@requiere_rol_gestion
 def editar_plan(request, pk):
-    """Edita un plan de mantención (nombre y tipo de equipo)."""
-    plan = get_object_or_404(PlanMantencion, pk=pk)
+    """Edita un plan de mantención y muestra sus servicios para modificarlos.
+
+    Es el destino del botón "Modificar mantención" de la lista de equipos: con
+    ?desde=equipos, guardar o cancelar devuelve a esa lista.
+    """
+    plan = get_object_or_404(PlanMantencion.objects.select_related('tipo_equipo'), pk=pk)
+    desde_equipos = (request.POST.get('desde') or request.GET.get('desde')) == 'equipos'
+    volver = 'flota:equipos' if desde_equipos else 'mantencion:planes'
     if request.method == 'POST':
         form = PlanMantencionForm(request.POST, instance=plan)
         if form.is_valid():
             form.save()
-            return redirect('mantencion:planes')
+            return redirect(volver)
     else:
         form = PlanMantencionForm(instance=plan)
-    return render(request, 'mantencion/editar_plan.html', {'form': form, 'plan': plan})
+    return render(request, 'mantencion/editar_plan.html', {
+        'form': form,
+        'plan': plan,
+        'servicios': plan.servicios.order_by('intervalo_horas'),
+        'unidad': 'km' if plan.tipo_equipo.unidad_medida == 'KM' else 'h',
+        'desde_equipos': desde_equipos,
+        'volver': volver,
+    })
 
 
 @require_POST
+@requiere_rol_gestion
 def borrar_plan(request, pk):
     """Borra un plan que no tiene servicios.
 
@@ -106,6 +123,7 @@ def borrar_plan(request, pk):
     return redirect('mantencion:planes')
 
 
+@requiere_rol_gestion
 def crear_servicio(request):
     """Crea un servicio (con su intervalo) dentro de un plan."""
     if request.method == 'POST':
@@ -114,10 +132,11 @@ def crear_servicio(request):
             form.save()
             return redirect('mantencion:planes')
     else:
-        form = ServicioPlanForm()
+        form = ServicioPlanForm(initial={'plan': request.GET.get('plan')})
     return render(request, 'mantencion/crear_servicio.html', {'form': form})
 
 
+@requiere_rol_gestion
 def editar_servicio(request, pk):
     """Edita un servicio (nombre, intervalo y descripción).
 
@@ -136,6 +155,7 @@ def editar_servicio(request, pk):
 
 
 @require_POST
+@requiere_rol_gestion
 def borrar_servicio(request, pk):
     """Borra un servicio que no está usado en ninguna OT.
 
@@ -148,6 +168,7 @@ def borrar_servicio(request, pk):
     return redirect('mantencion:planes')
 
 
+@requiere_rol_gestion
 def crear_orden(request):
     """Programa una nueva OT desde el diálogo de la lista.
 
@@ -169,6 +190,7 @@ def crear_orden(request):
     return _render_lista(request, abrir_orden=True)
 
 
+@requiere_rol_gestion
 def editar_orden(request, pk):
     """Edita una OT que aún no se cierra.
 
@@ -216,6 +238,7 @@ def detalle_orden(request, pk):
     return _render_detalle(request, orden)
 
 
+@requiere_rol_gestion
 def registrar_insumo(request, pk):
     """Registra un insumo real usado en la OT."""
     orden = get_object_or_404(OrdenTrabajo, pk=pk)
@@ -234,6 +257,7 @@ def registrar_insumo(request, pk):
 
 
 @require_POST
+@requiere_rol_gestion
 def iniciar_orden(request, pk):
     """Pasa una OT de PROGRAMADA a EN_CURSO y manda el equipo al taller.
 
@@ -253,6 +277,7 @@ def iniciar_orden(request, pk):
     return redirect('mantencion:ordenes_trabajo')
 
 
+@requiere_rol_gestion
 def cerrar_orden(request, pk):
     """Cierra una OT en curso fijando el horómetro de cierre.
 
@@ -278,6 +303,7 @@ def cerrar_orden(request, pk):
 
 
 @require_POST
+@requiere_rol_gestion
 def borrar_orden(request, pk):
     """Borra una OT que aún no se cierra.
 

@@ -25,6 +25,7 @@ class LecturaHorometro(models.Model):
 
     class Meta:
         db_table = 'lectura_horometro'
+        indexes = [models.Index(fields=['equipo', '-fecha_hora'], name='idx_lectura_equipo_fecha')]
 
     def __str__(self):
         return f'{self.equipo} @ {self.valor} ({self.fecha_hora})'
@@ -79,6 +80,7 @@ class SolicitudHorometro(models.Model):
 
     class Meta:
         db_table = 'solicitud_horometro'
+        indexes = [models.Index(fields=['estado'], name='idx_solicitud_estado')]
 
     def __str__(self):
         return f'{self.equipo} ({self.get_fuente_display()}, {self.estado})'

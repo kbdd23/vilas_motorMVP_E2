@@ -6,8 +6,10 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from arriendos.models import Arriendo
-from cuentas.permisos import puedeExportar, requiere_rol_exportador
+from cuentas.permisos import puedeExportar, puedeGestionar, requiere_rol_exportador, requiere_rol_gestion
 from horometros.services import fuenteSugerida
+from mantencion.models import PlanMantencion
+from mantencion.services import pronosticoMantencion
 from vilas_motor.exportacion import marca_de_tiempo, respuesta_excel
 
 from .exportacion import construir_libro_flota, construir_libro_historial
@@ -28,12 +30,25 @@ def lista_equipos(request):
         equipos = equipos.filter(estado=estado)
     else:
         estado = None
+    equipos = list(equipos)
+    pronosticos = pronosticoMantencion(equipos)
+    # Plan de mantención de cada tipo de equipo (el primero creado, si hay varios),
+    # para el botón "Modificar mantención" de la columna Acción.
+    plan_por_tipo = {}
+    for plan in PlanMantencion.objects.filter(
+        tipo_equipo__in={e.tipo_equipo_id for e in equipos}
+    ).order_by('id'):
+        plan_por_tipo.setdefault(plan.tipo_equipo_id, plan.id)
+    for equipo in equipos:
+        equipo.mantencion = pronosticos[equipo.id]
+        equipo.plan_mantencion_id = plan_por_tipo.get(equipo.tipo_equipo_id)
     return render(request, 'flota/equipos.html', {
         'equipos': equipos,
         'estados': Equipo.Estado.choices,
         'estado_filtrado': estado,
         'etiqueta_estado_filtrado': estados_validos.get(estado),
         'puede_exportar': puedeExportar(request.user),
+        'puede_gestionar': puedeGestionar(request.user),
     })
 
 
@@ -43,6 +58,7 @@ def lista_tipos_equipo(request):
     return render(request, 'flota/tipos_equipo.html', {'tipos': tipos})
 
 
+@requiere_rol_gestion
 def crear_tipo_equipo(request):
     """Crea una categoría de equipo."""
     if request.method == 'POST':
@@ -55,6 +71,7 @@ def crear_tipo_equipo(request):
     return render(request, 'flota/crear_tipo_equipo.html', {'form': form})
 
 
+@requiere_rol_gestion
 def crear_equipo(request):
     """Crea un equipo en el inventario."""
     if request.method == 'POST':
@@ -67,6 +84,7 @@ def crear_equipo(request):
     return render(request, 'flota/crear_equipo.html', {'form': form})
 
 
+@requiere_rol_gestion
 def editar_equipo(request, pk):
     """Edita los datos de un equipo ya registrado.
 
@@ -97,6 +115,7 @@ def detalle_equipo(request, pk):
     )
     return render(request, 'flota/detalle_equipo.html', {
         'equipo': equipo,
+        'mantencion': pronosticoMantencion([equipo])[equipo.id],
         'fuente_sugerida': fuenteSugerida(equipo),
         'puede_exportar': puedeExportar(request.user),
     })
@@ -104,6 +123,7 @@ def detalle_equipo(request, pk):
 
 @login_required
 @require_POST
+@requiere_rol_gestion
 def marcar_disponible(request, pk):
     """Devuelve un equipo a disponible, una vez terminado su arriendo.
 
@@ -118,6 +138,7 @@ def marcar_disponible(request, pk):
 
 @login_required
 @require_POST
+@requiere_rol_gestion
 def cambiar_estado(request, pk):
     """Cambia el estado de un equipo desde el inventario.
 

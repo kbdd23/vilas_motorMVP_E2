@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Acceso denegado — Vilas Motor{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+    <h1>Acceso denegado</h1>
+    <p class="page-subtitle">{{ exception|default:"No tienes permiso para realizar esta acción." }}</p>
+    <p>Si necesitas hacerlo, pide a un planificador o administrador que revise tu rol.</p>
+    <p><a class="btn btn-secondary" href="{% url 'cuentas:dashboard' %}">Volver al panel</a></p>
+</div>
+{% endblock %}

@@ -27,6 +27,8 @@
         <tr><th>N° serie</th><td>{{ equipo.numero_serie|default:"—" }}</td></tr>
         <tr><th>Estado</th><td>{{ equipo.get_estado_display }}</td></tr>
         <tr><th>Horómetro actual</th><td>{{ equipo.horometro_actual }}</td></tr>
+        <tr><th>Siguiente mantención</th><td>{% if mantencion.servicio %}{{ mantencion.horometro_objetivo|floatformat:1 }} {{ mantencion.unidad }} · {{ mantencion.servicio.nombre }} (cada {{ mantencion.servicio.intervalo_horas }} {{ mantencion.unidad }}){% else %}— (el tipo de equipo no tiene plan con intervalo){% endif %}</td></tr>
+        <tr><th>Próxima mantención</th><td>{% include 'flota/_partes/proxima_mantencion.html' with m=mantencion %}</td></tr>
     </tbody>
 </table>
 

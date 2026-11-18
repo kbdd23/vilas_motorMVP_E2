@@ -81,6 +81,10 @@ class OrdenTrabajo(models.Model):
 
     class Meta:
         db_table = 'orden_trabajo'
+        indexes = [
+            models.Index(fields=['estado'], name='idx_ot_estado'),
+            models.Index(fields=['equipo', 'estado'], name='idx_ot_equipo_estado'),
+        ]
 
     def __str__(self):
         return self.numero_ot or f'OT {self.id}'

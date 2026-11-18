@@ -33,9 +33,20 @@ como usuario del sistema.
 
 Es la forma más rápida de probar el sistema: no requiere MySQL.
 
+### Opción rápida: `iniciar_local.bat`
+
+Con Python 3.12 o superior instalado, basta con hacer doble clic en
+`iniciar_local.bat` (en la raíz del proyecto). El script crea el entorno virtual,
+instala las dependencias, genera un `.env` con SQLite si no existe, aplica las
+migraciones, crea el administrador `admin@vilasmotor.cl` (clave `VilasMotor2026!`),
+carga los datos de demostración y abre http://127.0.0.1:8000/. Se puede ejecutar
+cuantas veces se quiera: no duplica el administrador ni los datos.
+
+### Opción manual
+
 ```powershell
 # 1. Clonar la rama de trabajo
-git clone -b Beta https://github.com/kbdd23/vilas_motorMVP_E2.git
+git clone -b Gama https://github.com/kbdd23/vilas_motorMVP_E2.git
 cd vilas_motorMVP_E2
 
 # 2. Entorno virtual y dependencias
@@ -110,6 +121,25 @@ Luego se siguen los pasos 4 y 5 de la sección anterior.
 - Sin credenciales de correo configuradas, los códigos y enlaces se imprimen en la
   consola donde corre `runserver`.
 
+## Carga de la flota completa
+
+La planilla con las maquinarias de la empresa (columnas MAQUINARIA, FABRICANTE,
+MODELO, N° INTERNO y PPU) **no se incluye en el repositorio**. Para cargarla, se
+copia en `flota/datos/Equipos.xlsx` (carpeta ignorada por git) o se indica su ruta:
+
+```powershell
+python manage.py cargar_flota --archivo "C:\ruta\Equipos.xlsx" --simular   # resumen, sin guardar
+python manage.py cargar_flota --archivo "C:\ruta\Equipos.xlsx"             # carga o actualiza
+```
+
+- El tipo de equipo sale de la columna MAQUINARIA ("GRUA HORQUILLA 7 TON" → Grúa
+  horquilla) y la capacidad se guarda junto al modelo (`FD70-10 (7 TON)`).
+- Vehículos y remolques se miden en km; el resto de la maquinaria, en horas.
+- Sin N° interno, el código es el prefijo del tipo más un correlativo (`GH-001`,
+  `GEN-001`, `CTA-001`). Con N° interno se usa ese número.
+- Se puede ejecutar varias veces: no duplica equipos ni toca su estado u horómetro.
+- `iniciar_local.bat` la ejecuta solo si existe `flota/datos/Equipos.xlsx`.
+
 ## Código de equipo
 
 Al crear un equipo se elige cómo se asigna el código:
@@ -132,6 +162,8 @@ El código no se puede cambiar al editar el equipo.
 | `BREVO_API_KEY`, `BREVO_REMITENTE` | Envío de correo por la API de Brevo (necesario en Vercel, que bloquea SMTP) |
 | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_HOST`, `EMAIL_PORT` | Envío por SMTP (Gmail por defecto) si no hay clave de Brevo |
 
+| `LOGIN_MAX_INTENTOS`, `LOGIN_BLOQUEO_SEGUNDOS` | Intentos fallidos permitidos y duración del bloqueo (por defecto 5 y 900) |
+
 Las contraseñas deben tener al menos 12 caracteres.
 
 ## Despliegue en Vercel
@@ -148,7 +180,7 @@ python manage.py test
 ```
 
 - Con `DB_ENGINE=sqlite` las pruebas corren sin MySQL.
-- GitHub Actions ejecuta las pruebas en cada push y pull request a `main` y `Beta`
+- GitHub Actions ejecuta las pruebas en cada push y pull request a `main`, `Beta` y `Gama`
   (`.github/workflows/django-tests.yml`).
 - `python herramientas/medir_rendimiento.py 150 5`: mide tiempo y consultas SQL con
   una flota ampliada.
@@ -161,6 +193,13 @@ python manage.py test
 - Acceso obligatorio por middleware a todas las pantallas, salvo login,
   recuperación de contraseña y verificación.
 - Sesión de 8 horas y cookies HttpOnly y SameSite.
+- Permisos por rol: crear, editar y borrar datos (planes, servicios, OT, equipos,
+  arriendos, horómetros, insumos, clientes y usuarios) exige rol `planificador` o
+  `administrador` (o superusuario). Otro rol solo consulta y recibe un 403
+  (`cuentas/permisos.py`, decorador `requiere_rol_gestion`).
+- Bloqueo por fuerza bruta: tras 5 intentos fallidos seguidos, ese correo no puede
+  ingresar por 15 minutos (`LOGIN_MAX_INTENTOS`, `LOGIN_BLOQUEO_SEGUNDOS`). El contador
+  usa la caché de Django; en Vercel es por instancia, así que es una protección básica.
 - Los INSERT, UPDATE y DELETE de las entidades de negocio quedan registrados con
   usuario, IP y valor anterior y nuevo; la auditoría es de solo lectura.
 - `/diagnostico/` es un endpoint temporal para revisar el backend de correo en

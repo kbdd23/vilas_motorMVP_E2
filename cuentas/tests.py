@@ -359,3 +359,132 @@ class SegundoFactorDemoTest(TestCase):
             respuesta = self.client.get(reverse('cuentas:dashboard'))
 
         self.assertEqual(respuesta.status_code, 200)
+
+
+class BloqueoLoginTest(TestCase):
+    """Protección contra fuerza bruta: el correo se bloquea tras varios fallos seguidos."""
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(
+            email='plan@vilas.cl', password='ClaveCorrecta123', nombre='Planificador'
+        )
+        self.url = reverse('cuentas:login')
+
+    def _intentar(self, clave):
+        return self.client.post(self.url, {'username': 'plan@vilas.cl', 'password': clave})
+
+    def test_clave_correcta_inicia_sesion(self):
+        response = self._intentar('ClaveCorrecta123')
+        self.assertEqual(response.status_code, 302)
+
+    def test_bloquea_tras_el_maximo_de_intentos(self):
+        from django.conf import settings
+
+        for _ in range(settings.LOGIN_MAX_INTENTOS):
+            self.assertEqual(self._intentar('incorrecta').status_code, 200)
+        # Bloqueado: ni siquiera la clave correcta entra.
+        response = self._intentar('ClaveCorrecta123')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Demasiados intentos fallidos')
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_un_ingreso_correcto_reinicia_el_contador(self):
+        from django.conf import settings
+
+        for _ in range(settings.LOGIN_MAX_INTENTOS - 1):
+            self._intentar('incorrecta')
+        self.assertEqual(self._intentar('ClaveCorrecta123').status_code, 302)
+        self.client.logout()
+        for _ in range(settings.LOGIN_MAX_INTENTOS - 1):
+            self._intentar('incorrecta')
+        self.assertEqual(self._intentar('ClaveCorrecta123').status_code, 302)
+
+    def test_el_bloqueo_no_distingue_mayusculas_del_correo(self):
+        from django.conf import settings
+
+        for _ in range(settings.LOGIN_MAX_INTENTOS):
+            self._intentar('incorrecta')
+        response = self.client.post(self.url, {'username': 'PLAN@VILAS.CL', 'password': 'ClaveCorrecta123'})
+        self.assertContains(response, 'Demasiados intentos fallidos')
+
+
+class PermisosPorRolTest(TestCase):
+    """Control de acceso por rol (OWASP A01): solo planificador o administrador modifican datos."""
+
+    URLS_ESCRITURA_SIN_PK = [
+        'mantencion:crear_plan', 'mantencion:crear_servicio', 'mantencion:crear_orden',
+        'flota:crear_equipo', 'flota:crear_tipo_equipo', 'arriendos:crear_arriendo',
+        'horometros:crear_solicitud', 'insumos:crear_insumo', 'cuentas:crear_cliente',
+        'cuentas:crear_usuario',
+    ]
+    URLS_ESCRITURA_CON_PK = [
+        'mantencion:editar_plan', 'mantencion:borrar_plan', 'mantencion:editar_servicio',
+        'mantencion:borrar_servicio', 'mantencion:editar_orden', 'mantencion:iniciar_orden',
+        'mantencion:borrar_orden', 'mantencion:registrar_insumo', 'mantencion:cerrar_orden',
+        'flota:editar_equipo', 'flota:marcar_disponible', 'flota:cambiar_estado',
+        'arriendos:cerrar_arriendo', 'horometros:registrar_lectura', 'horometros:borrar_solicitud',
+    ]
+    URLS_CONSULTA = [
+        'mantencion:planes', 'mantencion:ordenes_trabajo', 'flota:equipos',
+        'arriendos:arriendos', 'horometros:index', 'insumos:insumos', 'cuentas:dashboard',
+    ]
+
+    def setUp(self):
+        Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.rol_consulta = Rol.objects.create(nombre='consulta', descripcion='Solo lectura')
+        self.planificador = Usuario.objects.create_user(
+            email='plan@vilas.cl', password='test1234', nombre='Planificador'
+        )
+        self.consulta = Usuario.objects.create_user(
+            email='consulta@vilas.cl', password='test1234', nombre='Consulta'
+        )
+        self.consulta.rol = self.rol_consulta
+        self.consulta.save(update_fields=['rol'])
+
+    def test_rol_sin_permiso_recibe_403_al_crear(self):
+        self.client.force_login(self.consulta)
+        for nombre in self.URLS_ESCRITURA_SIN_PK:
+            with self.subTest(url=nombre):
+                self.assertEqual(self.client.get(reverse(nombre)).status_code, 403)
+                self.assertEqual(self.client.post(reverse(nombre), {}).status_code, 403)
+
+    def test_rol_sin_permiso_recibe_403_al_editar_o_borrar(self):
+        self.client.force_login(self.consulta)
+        for nombre in self.URLS_ESCRITURA_CON_PK:
+            with self.subTest(url=nombre):
+                respuesta = self.client.post(reverse(nombre, args=[1]), {})
+                self.assertEqual(respuesta.status_code, 403)
+
+    def test_rol_sin_permiso_no_borra_una_orden(self):
+        tipo = TipoEquipo.objects.create(nombre='Generador', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        equipo = Equipo.objects.create(tipo_equipo=tipo, codigo='GEN-001')
+        orden = OrdenTrabajo.objects.create(
+            equipo=equipo, numero_ot='OT-0001', tipo=OrdenTrabajo.Tipo.CORRECTIVA
+        )
+        self.client.force_login(self.consulta)
+        respuesta = self.client.post(reverse('mantencion:borrar_orden', args=[orden.pk]))
+        self.assertEqual(respuesta.status_code, 403)
+        self.assertTrue(OrdenTrabajo.objects.filter(pk=orden.pk).exists())
+
+    def test_rol_sin_permiso_puede_consultar(self):
+        self.client.force_login(self.consulta)
+        for nombre in self.URLS_CONSULTA:
+            with self.subTest(url=nombre):
+                self.assertEqual(self.client.get(reverse(nombre)).status_code, 200)
+
+    def test_planificador_puede_abrir_los_formularios(self):
+        self.client.force_login(self.planificador)
+        for nombre in self.URLS_ESCRITURA_SIN_PK:
+            with self.subTest(url=nombre):
+                self.assertNotEqual(self.client.get(reverse(nombre)).status_code, 403)
+
+    def test_superusuario_siempre_puede_gestionar(self):
+        from cuentas.permisos import puedeGestionar
+
+        self.consulta.is_superuser = True
+        self.consulta.save(update_fields=['is_superuser'])
+        self.assertTrue(puedeGestionar(self.consulta))

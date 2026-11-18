@@ -11,14 +11,14 @@ from arriendos.models import Arriendo
 from cuentas.busqueda import buscar_todo
 from cuentas.forms import ClienteForm, UsuarioForm, VerificacionForm
 from cuentas.models import Cliente, Usuario
+from cuentas.permisos import requiere_rol_gestion
 from cuentas.services import codigoEsValido, confirmarCuenta, enviarCodigoVerificacion
 from flota.models import Equipo
 from flota.services import ESTADOS_SIN_DEVOLVER
 from horometros.models import SolicitudHorometro
 from mantencion.models import OrdenTrabajo
-from mantencion.services import CalculadoraProximoServicio
+from mantencion.services import UMBRAL_ALERTA_HORAS, CalculadoraProximoServicio
 
-UMBRAL_ALERTA_HORAS = 100
 
 
 def _pronostico_mantencion(equipos):
@@ -71,6 +71,7 @@ def lista_clientes(request):
     return render(request, 'cuentas/clientes.html', {'clientes': clientes})
 
 
+@requiere_rol_gestion
 def crear_cliente(request):
     """Crea un cliente en la cartera."""
     if request.method == 'POST':
@@ -85,6 +86,7 @@ def crear_cliente(request):
 
 
 @user_passes_test(lambda usuario: usuario.is_staff)
+@requiere_rol_gestion
 def lista_usuarios(request):
     """Directorio de acceso. Solo el personal autorizado puede administrarlo."""
     usuarios = Usuario.objects.select_related('rol', 'cliente').order_by('nombre', 'email')
@@ -92,6 +94,7 @@ def lista_usuarios(request):
 
 
 @user_passes_test(lambda usuario: usuario.is_staff)
+@requiere_rol_gestion
 def crear_usuario(request):
     """Crea una cuenta que inicia sesión con su dirección de correo.
 
@@ -111,26 +114,6 @@ def crear_usuario(request):
     else:
         form = UsuarioForm()
     return render(request, 'cuentas/crear_usuario.html', {'form': form})
-
-
-@login_not_required
-def diagnostico(request):
-    """Informa qué backend de correo está activo en este deployment.
-
-    Solo devuelve booleanos y nombres de configuración: ninguna credencial.
-    Existe para comprobar el entorno de producción y se retira después.
-    """
-    from django.conf import settings
-    from django.http import JsonResponse
-
-    return JsonResponse({
-        'backend': settings.EMAIL_BACKEND,
-        'brevo_key_configurada': bool(settings.BREVO_API_KEY),
-        'brevo_remitente': settings.BREVO_REMITENTE,
-        'gmail_usuario_configurado': bool(settings.EMAIL_HOST_USER),
-        'remitente_por_defecto': settings.DEFAULT_FROM_EMAIL,
-    })
-
 
 
 def verificar(request):

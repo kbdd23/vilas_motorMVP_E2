@@ -2,6 +2,11 @@
 
 La exportación de planillas queda reservada a planificadores y administradores:
 son datos de toda la flota y del historial de mantención, no de consulta diaria.
+
+Las acciones que crean, editan o borran datos (planes, servicios, OT, equipos,
+arriendos, horómetros, insumos y clientes) también exigen uno de esos roles.
+Otra cuenta con sesión iniciada solo puede consultar (OWASP A01: control de
+acceso roto).
 """
 
 from functools import wraps
@@ -9,6 +14,7 @@ from functools import wraps
 from django.core.exceptions import PermissionDenied
 
 ROLES_EXPORTADORES = frozenset({'planificador', 'administrador'})
+ROLES_GESTION = frozenset({'planificador', 'administrador'})
 
 
 def nombreDelRol(usuario):
@@ -30,6 +36,26 @@ def requiere_rol_exportador(vista):
     def envoltorio(request, *args, **kwargs):
         if not puedeExportar(request.user):
             raise PermissionDenied('Tu rol no permite exportar planillas.')
+        return vista(request, *args, **kwargs)
+
+    return envoltorio
+
+
+def puedeGestionar(usuario):
+    """True para superusuarios y cuentas con rol planificador o administrador."""
+    if not usuario.is_authenticated:
+        return False
+    if usuario.is_superuser:
+        return True
+    return nombreDelRol(usuario) in ROLES_GESTION
+
+
+def requiere_rol_gestion(vista):
+    """Corta con 403 a quien no puede crear, editar ni borrar datos del sistema."""
+    @wraps(vista)
+    def envoltorio(request, *args, **kwargs):
+        if not puedeGestionar(request.user):
+            raise PermissionDenied('Tu rol no permite modificar datos del sistema.')
         return vista(request, *args, **kwargs)
 
     return envoltorio

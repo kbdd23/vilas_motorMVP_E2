@@ -436,3 +436,86 @@ class ExportacionFlotaTest(TestCase):
             self.client.get(reverse('flota:equipos')),
             reverse('flota:exportar_flota'),
         )
+
+
+class CargarFlotaTest(TestCase):
+    """Carga masiva de la flota desde la planilla Equipos.xlsx (prueba de volumen)."""
+
+    def _planilla(self, filas):
+        import os
+        import tempfile
+
+        from openpyxl import Workbook
+
+        libro = Workbook()
+        hoja = libro.active
+        hoja.append(['MAQUINARIA', 'FABRICANTE', 'MODELO', 'N° INTERNO', 'PPU'])
+        for fila in filas:
+            hoja.append(fila)
+        archivo = tempfile.NamedTemporaryFile(suffix='.xlsx', delete=False)
+        archivo.close()
+        libro.save(archivo.name)
+        self.addCleanup(os.remove, archivo.name)
+        return archivo.name
+
+    def _cargar(self, ruta):
+        from io import StringIO
+
+        from django.core.management import call_command
+
+        call_command('cargar_flota', archivo=ruta, stdout=StringIO())
+
+    def test_clasifica_tipo_unidad_y_capacidad(self):
+        from flota.carga_flota import clasificar
+
+        self.assertEqual(clasificar('GRUA HORQUILLA 03 TON GAS'), ('Grúa horquilla', 'HORAS', 'GH', '3 TON GAS'))
+        self.assertEqual(clasificar('GENERADOR 45 KVA'), ('Generador', 'HORAS', 'GEN', '45 KVA'))
+        self.assertEqual(clasificar('CAMIONETA')[:3], ('Camioneta', 'KM', 'CTA'))
+        self.assertEqual(clasificar('CAMION PLUMA')[0], 'Camión pluma')
+        self.assertEqual(clasificar('FURGÓN')[0], 'Furgón')
+
+    def test_maquinaria_desconocida_avisa(self):
+        from django.core.management.base import CommandError
+
+        ruta = self._planilla([['NAVE ESPACIAL', 'X', 'Y', None, None]])
+        with self.assertRaises(CommandError):
+            self._cargar(ruta)
+
+    def test_carga_equipos_con_codigo_por_tipo(self):
+        ruta = self._planilla([
+            ['GRUA HORQUILLA 7 TON', 'KOMATSU', 'FD70-10', None, None],
+            ['GRUA HORQUILLA 3 TON', 'KOMATSU', 'FD30T17', None, None],
+            ['CAMIONETA', 'TOYOTA', 'HILUX', None, None],
+        ])
+        self._cargar(ruta)
+        self.assertEqual(Equipo.objects.count(), 3)
+        grua = Equipo.objects.get(codigo='GH-001')
+        self.assertEqual(grua.modelo, 'FD70-10 (7 TON)')
+        self.assertEqual(grua.tipo_equipo.unidad_medida, TipoEquipo.UnidadMedida.HORAS)
+        self.assertEqual(Equipo.objects.get(codigo='CTA-001').tipo_equipo.unidad_medida, TipoEquipo.UnidadMedida.KM)
+
+    def test_ejecutarla_dos_veces_no_duplica(self):
+        ruta = self._planilla([['COMPRESOR', 'ATLAS COPCO', 'XAS 97', None, None]])
+        self._cargar(ruta)
+        equipo = Equipo.objects.get(codigo='COM-001')
+        equipo.actualizarHorometro(Decimal('1200.0'))
+        self._cargar(ruta)
+        self.assertEqual(Equipo.objects.count(), 1)
+        self.assertEqual(Equipo.objects.get(codigo='COM-001').horometro_actual, Decimal('1200.0'))
+
+    def test_reutiliza_el_tipo_existente(self):
+        TipoEquipo.objects.create(nombre='Generador', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        ruta = self._planilla([['GENERADOR 45 KVA', 'JCB', 'G45QX', None, None]])
+        self._cargar(ruta)
+        self.assertEqual(TipoEquipo.objects.filter(nombre='Generador').count(), 1)
+
+    def test_volumen_de_400_equipos(self):
+        filas = [['LUMINARIA', 'PRAMAC', f'T.LED {i}', None, None] for i in range(400)]
+        self._cargar(self._planilla(filas))
+        self.assertEqual(Equipo.objects.filter(codigo__startswith='LUM-').count(), 400)
+        Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        usuario = Usuario.objects.create_user(email='vol@vilas.cl', password='test1234', nombre='Volumen')
+        self.client.force_login(usuario)
+        respuesta_lista = self.client.get(reverse('flota:equipos'))
+        self.assertEqual(respuesta_lista.status_code, 200)
+        self.assertContains(respuesta_lista, 'LUM-400')

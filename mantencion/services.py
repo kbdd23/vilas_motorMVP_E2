@@ -6,6 +6,9 @@ from horometros.models import LecturaHorometro
 
 from .models import OrdenTrabajo, ServicioPlan
 
+# Horas antes del vencimiento en que un servicio pasa a "por vencer".
+UMBRAL_ALERTA_HORAS = 100
+
 
 class CalculadoraProximoServicio:
     """Calcula cuándo corresponde la próxima mantención de un equipo.
@@ -93,6 +96,43 @@ class CalculadoraProximoServicio:
                     mejor, mejor_horas = servicio, horas
             resultado[equipo.id] = (mejor, mejor_horas)
         return resultado
+
+
+def pronosticoMantencion(equipos, umbral_alerta_horas=UMBRAL_ALERTA_HORAS):
+    """Próxima mantención de cada equipo según el plan de su tipo de equipo.
+
+    Devuelve {id_equipo: dict} con:
+      - servicio: el servicio del plan que vence primero (o None si no hay plan).
+      - horas_restantes: horas de uso que faltan para ese servicio (negativo si venció).
+      - horometro_objetivo: lectura del horómetro en la que corresponde hacerlo.
+      - horas_vencidas: horas de atraso en positivo, solo si el servicio venció.
+      - alerta: SIN_PLAN, VENCIDO, POR_VENCER o AL_DIA (misma regla que el dashboard).
+      - unidad: 'h' u 'km', según cómo se mide el tipo de equipo.
+    """
+    equipos = list(equipos)
+    calculadora = CalculadoraProximoServicio(umbral_alerta_horas=umbral_alerta_horas)
+    resultado = {}
+    for id_equipo, (servicio, horas) in calculadora.proximosServicios(equipos).items():
+        equipo = next(e for e in equipos if e.id == id_equipo)
+        if servicio is None:
+            alerta, objetivo = 'SIN_PLAN', None
+        else:
+            objetivo = equipo.horometro_actual + horas
+            if horas < 0:
+                alerta = 'VENCIDO'
+            elif horas <= umbral_alerta_horas:
+                alerta = 'POR_VENCER'
+            else:
+                alerta = 'AL_DIA'
+        resultado[id_equipo] = {
+            'servicio': servicio,
+            'horas_restantes': horas,
+            'horometro_objetivo': objetivo,
+            'horas_vencidas': -horas if alerta == 'VENCIDO' else None,
+            'alerta': alerta,
+            'unidad': 'km' if equipo.tipo_equipo.unidad_medida == 'KM' else 'h',
+        }
+    return resultado
 
 
 def registrarCierreDeOrden(orden, valor, usuario):

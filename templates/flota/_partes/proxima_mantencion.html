@@ -1,0 +1,10 @@
+{% comment %}Horas que faltan para la próxima mantención. Recibe "m" (pronosticoMantencion de un equipo).{% endcomment %}
+{% if m.alerta == 'SIN_PLAN' %}
+    <span class="badge badge-neutral">Sin plan</span>
+{% elif m.alerta == 'VENCIDO' %}
+    <span class="badge badge-alerta">Vencida hace {{ m.horas_vencidas|floatformat:1 }} {{ m.unidad }}</span>
+{% elif m.alerta == 'POR_VENCER' %}
+    <span class="badge badge-warn">Faltan {{ m.horas_restantes|floatformat:1 }} {{ m.unidad }}</span>
+{% else %}
+    <span class="badge badge-ok">Faltan {{ m.horas_restantes|floatformat:1 }} {{ m.unidad }}</span>
+{% endif %}

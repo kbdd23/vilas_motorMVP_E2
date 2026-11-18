@@ -2194,3 +2194,69 @@ th[aria-sort="descending"] .sort-button::after {
         padding: 6px 9px;
     }
 }
+
+/* Botón "Exportar Excel" en el verde de Microsoft Excel. */
+.btn.btn-excel,
+.mock-heading .btn.btn-excel,
+[data-theme="dark"] .btn.btn-excel {
+    background: #217346;
+    border-color: #217346;
+    color: #ffffff;
+}
+
+.btn.btn-excel:hover,
+.mock-heading .btn.btn-excel:hover,
+[data-theme="dark"] .btn.btn-excel:hover {
+    background: #185c37;
+    border-color: #185c37;
+    color: #ffffff;
+}
+
+/* Columna Acción de Equipos: botones uno al lado del otro y sin cortar el texto.
+   "Cambiar estado" en rojo y "Modificar mantención" en azul. */
+.celda-acciones-equipo {
+    flex-wrap: nowrap;
+}
+
+.celda-acciones-equipo .btn {
+    white-space: nowrap;
+    text-align: center;
+    /* Mismo estilo que "Crear equipo" y "Exportar Excel" */
+    padding: 10px 16px;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    text-decoration: none;
+}
+
+.btn.btn-estado,
+[data-theme="dark"] .btn.btn-estado {
+    background: #e10600;
+    border-color: #e10600;
+    color: #ffffff;
+}
+
+.btn.btn-estado:hover,
+[data-theme="dark"] .btn.btn-estado:hover {
+    background: #b80500;
+    border-color: #b80500;
+    color: #ffffff;
+}
+
+.btn.btn-mantencion,
+[data-theme="dark"] .btn.btn-mantencion {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+.btn.btn-mantencion:hover,
+[data-theme="dark"] .btn.btn-mantencion:hover {
+    background: #1e3a8a;
+    border-color: #1e3a8a;
+    color: #ffffff;
+}

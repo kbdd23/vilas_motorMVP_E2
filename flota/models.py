@@ -56,6 +56,7 @@ class Equipo(models.Model):
 
     class Meta:
         db_table = 'equipo'
+        indexes = [models.Index(fields=['estado'], name='idx_equipo_estado')]
 
     def __str__(self):
         return self.codigo

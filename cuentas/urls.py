@@ -43,6 +43,5 @@ urlpatterns = [
     ), name='password_reset_complete'),
     path('verificar/', views.verificar, name='verificar'),
     path('verificar/reenviar/', views.reenviar_codigo, name='reenviar_codigo'),
-    path('diagnostico/', views.diagnostico, name='diagnostico'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]

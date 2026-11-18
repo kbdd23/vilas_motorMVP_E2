@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from cuentas.permisos import requiere_rol_gestion
 from flota.models import Equipo
 from vilas_motor.ventanas import VENTANA_POR_DEFECTO, VENTANAS, dias_de_ventana
 
@@ -86,6 +87,7 @@ def index(request):
 
 
 @login_required
+@requiere_rol_gestion
 def crear_solicitud(request):
     """Crea una solicitud de horómetro hacia la fuente elegida.
 
@@ -127,6 +129,7 @@ def _respeta_el_horometro(form, equipo):
 
 
 @login_required
+@requiere_rol_gestion
 def registrar_lectura(request, pk):
     """Cierra una solicitud con el horómetro que se recibió.
 
@@ -163,6 +166,7 @@ def registrar_lectura(request, pk):
 
 @login_required
 @require_POST
+@requiere_rol_gestion
 def borrar_solicitud(request, pk):
     """Borra una solicitud pendiente.
 

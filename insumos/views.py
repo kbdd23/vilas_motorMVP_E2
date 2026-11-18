@@ -1,5 +1,7 @@
 from django.shortcuts import redirect, render
 
+from cuentas.permisos import requiere_rol_gestion
+
 from .forms import InsumoForm
 from .models import Insumo
 
@@ -10,6 +12,7 @@ def lista_insumos(request):
     return render(request, 'insumos/insumos.html', {'insumos': insumos})
 
 
+@requiere_rol_gestion
 def crear_insumo(request):
     """Crea un insumo en el catálogo."""
     if request.method == 'POST':

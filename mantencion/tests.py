@@ -555,3 +555,121 @@ class ExportacionOrdenesTest(TestCase):
             self.client.get(reverse('mantencion:ordenes_trabajo')),
             reverse('mantencion:exportar_ordenes'),
         )
+
+
+class PronosticoMantencionTest(TestCase):
+    """Próxima mantención por equipo: horómetro en que toca y horas que faltan."""
+
+    def setUp(self):
+        Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(
+            email='plan@vilas.cl', password='test1234', nombre='Planificador'
+        )
+        self.tipo = TipoEquipo.objects.create(nombre='Generador', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        self.equipo = Equipo.objects.create(tipo_equipo=self.tipo, codigo='EQ-001')
+        plan = PlanMantencion.objects.create(tipo_equipo=self.tipo, nombre='Plan Generador')
+        self.servicio_250 = ServicioPlan.objects.create(plan=plan, nombre='Servicio 250h', intervalo_horas=250)
+        self.servicio_500 = ServicioPlan.objects.create(plan=plan, nombre='Servicio 500h', intervalo_horas=500)
+
+    def _pronostico(self, equipo=None):
+        from mantencion.services import pronosticoMantencion
+
+        equipo = equipo or Equipo.objects.get(pk=self.equipo.pk)
+        return pronosticoMantencion([equipo])[equipo.id]
+
+    def test_al_dia_calcula_horometro_objetivo_y_horas_restantes(self):
+        self.equipo.actualizarHorometro(Decimal('100.0'))
+        p = self._pronostico()
+        self.assertEqual(p['servicio'], self.servicio_250)
+        self.assertEqual(p['horas_restantes'], Decimal('150.0'))
+        self.assertEqual(p['horometro_objetivo'], Decimal('250.0'))
+        self.assertEqual(p['alerta'], 'AL_DIA')
+
+    def test_el_objetivo_parte_desde_el_ultimo_cierre(self):
+        OrdenTrabajo.objects.create(
+            equipo=self.equipo, servicio_plan=self.servicio_250, tipo=OrdenTrabajo.Tipo.PREVENTIVA,
+            estado=OrdenTrabajo.Estado.CERRADA, numero_ot='OT-001', horometro_cierre=Decimal('200.0'),
+        )
+        self.equipo.actualizarHorometro(Decimal('300.0'))
+        p = self._pronostico()
+        self.assertEqual(p['servicio'], self.servicio_250)
+        self.assertEqual(p['horometro_objetivo'], Decimal('450.0'))
+        self.assertEqual(p['horas_restantes'], Decimal('150.0'))
+
+    def test_por_vencer_dentro_del_umbral(self):
+        self.equipo.actualizarHorometro(Decimal('220.0'))
+        p = self._pronostico()
+        self.assertEqual(p['alerta'], 'POR_VENCER')
+        self.assertEqual(p['horas_restantes'], Decimal('30.0'))
+
+    def test_vencido_informa_horas_de_atraso(self):
+        self.equipo.actualizarHorometro(Decimal('300.0'))
+        p = self._pronostico()
+        self.assertEqual(p['alerta'], 'VENCIDO')
+        self.assertEqual(p['horas_vencidas'], Decimal('50.0'))
+
+    def test_tipo_sin_plan(self):
+        otro = TipoEquipo.objects.create(nombre='Compresor', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        equipo = Equipo.objects.create(tipo_equipo=otro, codigo='CMP-001')
+        p = self._pronostico(equipo)
+        self.assertEqual(p['alerta'], 'SIN_PLAN')
+        self.assertIsNone(p['servicio'])
+        self.assertIsNone(p['horometro_objetivo'])
+
+    def test_lista_y_ficha_muestran_las_columnas(self):
+        self.equipo.actualizarHorometro(Decimal('100.0'))
+        self.client.force_login(self.usuario)
+        lista = self.client.get(reverse('flota:equipos'))
+        self.assertContains(lista, 'Siguiente mantención')
+        self.assertContains(lista, 'Próxima mantención')
+        self.assertContains(lista, 'Servicio 250h')
+        self.assertEqual(lista.context['equipos'][0].mantencion['horas_restantes'], Decimal('150.0'))
+        ficha = self.client.get(reverse('flota:detalle_equipo', args=[self.equipo.pk]))
+        self.assertContains(ficha, 'Siguiente mantención')
+        self.assertContains(ficha, 'cada 250 h')
+
+
+class ModificarMantencionTest(TestCase):
+    """Botón "Modificar mantención" en la lista de equipos y la pantalla del plan."""
+
+    def setUp(self):
+        Rol.objects.get_or_create(nombre='planificador', defaults={'descripcion': 'Planificador'})
+        self.usuario = Usuario.objects.create_user(email='plan@vilas.cl', password='test1234', nombre='Planificador')
+        self.tipo = TipoEquipo.objects.create(nombre='Generador', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        self.sin_plan = TipoEquipo.objects.create(nombre='Compresor', unidad_medida=TipoEquipo.UnidadMedida.HORAS)
+        self.plan = PlanMantencion.objects.create(tipo_equipo=self.tipo, nombre='Plan Generador')
+        ServicioPlan.objects.create(plan=self.plan, nombre='Servicio 250h', intervalo_horas=250)
+        Equipo.objects.create(tipo_equipo=self.tipo, codigo='GEN-001')
+        Equipo.objects.create(tipo_equipo=self.sin_plan, codigo='COM-001')
+        self.client.force_login(self.usuario)
+
+    def test_la_lista_enlaza_el_plan_del_tipo(self):
+        respuesta = self.client.get(reverse('flota:equipos'))
+        self.assertContains(respuesta, 'Modificar mantención', count=2)
+        self.assertContains(respuesta, reverse('mantencion:editar_plan', args=[self.plan.id]) + '?desde=equipos')
+        self.assertContains(respuesta, reverse('mantencion:crear_plan') + f'?tipo_equipo={self.sin_plan.id}')
+
+    def test_un_rol_sin_permiso_no_ve_el_boton(self):
+        consulta = Rol.objects.create(nombre='consulta', descripcion='Solo lectura')
+        self.usuario.rol = consulta
+        self.usuario.save(update_fields=['rol'])
+        respuesta = self.client.get(reverse('flota:equipos'))
+        self.assertNotContains(respuesta, 'Modificar mantención')
+
+    def test_la_pantalla_del_plan_muestra_sus_servicios(self):
+        respuesta = self.client.get(reverse('mantencion:editar_plan', args=[self.plan.id]) + '?desde=equipos')
+        self.assertContains(respuesta, 'Servicio 250h')
+        self.assertContains(respuesta, 'Agregar servicio')
+        self.assertContains(respuesta, 'Intervalo (h)')
+
+    def test_guardar_desde_equipos_vuelve_a_la_lista(self):
+        respuesta = self.client.post(reverse('mantencion:editar_plan', args=[self.plan.id]), {
+            'tipo_equipo': self.tipo.id, 'nombre': 'Plan Generador v2', 'desde': 'equipos',
+        })
+        self.assertRedirects(respuesta, reverse('flota:equipos'))
+        self.plan.refresh_from_db()
+        self.assertEqual(self.plan.nombre, 'Plan Generador v2')
+
+    def test_crear_plan_llega_con_el_tipo_elegido(self):
+        respuesta = self.client.get(reverse('mantencion:crear_plan') + f'?tipo_equipo={self.sin_plan.id}')
+        self.assertEqual(respuesta.context['form'].initial['tipo_equipo'], str(self.sin_plan.id))

@@ -8,3 +8,5 @@ staticfiles/
 *.log
 .DS_Store
 bitacora_desarrollo.md
+# Planilla de maquinarias de la empresa: se usa en local, no se sube al repositorio
+flota/datos/

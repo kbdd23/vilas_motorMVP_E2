@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from cuentas.permisos import requiere_rol_gestion
 from flota.models import Equipo
 from flota.services import ESTADOS_SIN_DEVOLVER
 from vilas_motor.ventanas import VENTANA_POR_DEFECTO, VENTANAS, dias_de_ventana
@@ -50,6 +51,7 @@ def lista_arriendos(request):
     })
 
 
+@requiere_rol_gestion
 def crear_arriendo(request):
     """Asigna un equipo a un cliente.
 
@@ -73,6 +75,7 @@ def crear_arriendo(request):
     return render(request, 'arriendos/crear.html', {'form': form})
 
 
+@requiere_rol_gestion
 def cerrar_arriendo(request, pk):
     """Cierra un arriendo fijando su fecha de término."""
     arriendo = get_object_or_404(Arriendo, pk=pk)
