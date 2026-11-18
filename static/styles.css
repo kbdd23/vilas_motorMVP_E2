@@ -2283,11 +2283,17 @@ th[aria-sort="descending"] .sort-button::after {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
+    justify-items: stretch;
 }
 
 .celda-acciones-equipo .btn {
-    white-space: nowrap;
+    /* Sin "nowrap": si el texto no cabe, se parte en dos líneas centradas
+       dentro del botón. El ancho lo fija la columna, no el texto. */
+    white-space: normal;
     text-align: center;
+    line-height: 1.15;
+    width: 100%;
+    box-sizing: border-box;
     /* Mismo estilo que "Crear equipo" y "Exportar Excel" */
     padding: 9px 10px;
     border-radius: 0;
