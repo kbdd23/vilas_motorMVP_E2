@@ -344,9 +344,6 @@ tbody tr:last-child td:last-child {
     -webkit-overflow-scrolling: touch;
     border-radius: 10px;
     box-shadow: var(--sombra-media);
-    /* Habilita consultas de contenedor: la columna Acción responde al ancho
-       real de la tabla, no al del viewport. */
-    container-type: inline-size;
 }
 
 .tabla-scroll > table {
@@ -359,17 +356,9 @@ tbody tr:last-child td:last-child {
    de Equipos caben en el ancho disponible sin recurrir al scroll horizontal. */
 .tabla-scroll th,
 .tabla-scroll td {
-    padding: 12px 10px;
+    padding: 12px 8px;
 }
 
-/* Enfoque mixto: apilados por defecto y en línea solo cuando el contenedor
-   tiene ancho de sobra para dos botones de ancho completo. */
-@container (min-width: 1160px) {
-    .celda-acciones-equipo {
-        grid-auto-flow: column;
-        grid-auto-columns: 1fr;
-    }
-}
 
 th {
     padding: 14px 16px;
@@ -2276,23 +2265,24 @@ th[aria-sort="descending"] .sort-button::after {
     color: #ffffff;
 }
 
-/* Columna Acción de Equipos: rejilla de una sola columna para que ambos
-   botones midan exactamente lo mismo, sin importar el largo del texto.
+/* Columna Acción de Equipos: los dos botones van siempre en la misma fila,
+   con el mismo ancho y el texto centrado. El ancho común lo fija la etiqueta
+   más larga, así el rojo replica al azul.
    "Cambiar estado" en rojo y "Modificar mantención" en azul. */
 .celda-acciones-equipo {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
     gap: 8px;
-    justify-items: stretch;
 }
 
 .celda-acciones-equipo .btn {
-    /* Sin "nowrap": si el texto no cabe, se parte en dos líneas centradas
-       dentro del botón. El ancho lo fija la columna, no el texto. */
-    white-space: normal;
+    /* "min-width" en em fija el ancho de la etiqueta más larga y lo replica
+       en el otro botón; "flex: 1 1 auto" les reparte el espacio por igual. */
+    flex: 1 1 auto;
+    min-width: 11em;
+    white-space: nowrap;
     text-align: center;
-    line-height: 1.15;
-    width: 100%;
     box-sizing: border-box;
     /* Mismo estilo que "Crear equipo" y "Exportar Excel" */
     padding: 9px 10px;
