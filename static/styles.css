@@ -347,8 +347,16 @@ tbody tr:last-child td:last-child {
 }
 
 .tabla-scroll > table {
-    min-width: 1024px;
+    width: 100%;
+    min-width: 100%;
     box-shadow: none;
+}
+
+/* Dentro del contenedor se aprieta el relleno de las celdas: las diez columnas
+   de Equipos caben en el ancho disponible sin recurrir al scroll horizontal. */
+.tabla-scroll th,
+.tabla-scroll td {
+    padding: 12px 10px;
 }
 
 th {
@@ -888,7 +896,8 @@ td a:hover {
        se evita que la tabla se convierta en un segundo scroller. */
     .tabla-scroll > table {
         display: table;
-        width: 1024px;
+        width: 100%;
+        min-width: 640px;
         max-width: none;
         overflow: visible;
     }
@@ -2255,23 +2264,24 @@ th[aria-sort="descending"] .sort-button::after {
     color: #ffffff;
 }
 
-/* Columna Acción de Equipos: botones uno al lado del otro y sin cortar el texto.
+/* Columna Acción de Equipos: botones sin cortar el texto y con salto de línea
+   cuando el ancho aprieta, para que la tabla use el espacio disponible.
    "Cambiar estado" en rojo y "Modificar mantención" en azul. */
 .celda-acciones-equipo {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
 .celda-acciones-equipo .btn {
     white-space: nowrap;
     text-align: center;
     /* Mismo estilo que "Crear equipo" y "Exportar Excel" */
-    padding: 10px 16px;
+    padding: 9px 12px;
     border-radius: 0;
     box-shadow: none;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    letter-spacing: .05em;
+    letter-spacing: .03em;
     text-transform: uppercase;
     text-decoration: none;
 }
